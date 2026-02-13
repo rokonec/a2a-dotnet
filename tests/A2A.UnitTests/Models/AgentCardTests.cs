@@ -23,9 +23,10 @@ public class AgentCardTests
           },
           "securitySchemes": {
             "apiKey": {
-              "type": "apiKey",
-              "name": "X-API-Key",
-              "in": "header"
+              "apiKeySecurityScheme": {
+                "name": "X-API-Key",
+                "location": "header"
+              }
             }
           },
           "security": [
@@ -99,9 +100,10 @@ public class AgentCardTests
         Assert.NotNull(deserializedCard.SecuritySchemes);
         Assert.Single(deserializedCard.SecuritySchemes);
         Assert.Contains("apiKey", deserializedCard.SecuritySchemes.Keys);
-        var apisec = Assert.IsType<ApiKeySecurityScheme>(deserializedCard.SecuritySchemes["apiKey"]);
+        var apisec = deserializedCard.SecuritySchemes["apiKey"].ApiKeySecurityScheme;
+        Assert.NotNull(apisec);
         Assert.False(string.IsNullOrWhiteSpace(apisec.Name));
-        Assert.False(string.IsNullOrWhiteSpace(apisec.KeyLocation));
+        Assert.False(string.IsNullOrWhiteSpace(apisec.Location));
 
         Assert.NotNull(deserializedCard.Security);
         Assert.Single(deserializedCard.Security);
@@ -178,7 +180,7 @@ public class AgentCardTests
             },
             SecuritySchemes = new Dictionary<string, SecurityScheme>
             {
-                ["apiKey"] = new ApiKeySecurityScheme("X-API-Key", "header")
+                ["apiKey"] = new SecurityScheme { ApiKeySecurityScheme = new ApiKeySecurityScheme { Name = "X-API-Key", Location = "header" } }
             },
             Security = new List<Dictionary<string, string[]>>
             {

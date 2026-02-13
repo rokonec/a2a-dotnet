@@ -76,6 +76,15 @@ public static partial class A2AJsonUtilities
     [JsonSerializable(typeof(TaskPushNotificationConfig))]
     [JsonSerializable(typeof(TaskQueryParams))]
 
+    // Security types
+    [JsonSerializable(typeof(SecurityScheme))]
+    [JsonSerializable(typeof(ApiKeySecurityScheme))]
+    [JsonSerializable(typeof(HttpAuthSecurityScheme))]
+    [JsonSerializable(typeof(OAuth2SecurityScheme))]
+    [JsonSerializable(typeof(OpenIdConnectSecurityScheme))]
+    [JsonSerializable(typeof(MutualTlsSecurityScheme))]
+    [JsonSerializable(typeof(AuthenticationInfo))]
+
     [ExcludeFromCodeCoverage]
     internal sealed partial class JsonContext : JsonSerializerContext;
 }

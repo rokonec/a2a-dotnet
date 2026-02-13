@@ -244,7 +244,7 @@ public class A2AClientTests
                 Token = "tok",
                 Authentication = new PushNotificationAuthenticationInfo
                 {
-                    Schemes = ["Bearer"],
+                    Scheme = "Bearer",
                 }
             }
         };
@@ -265,7 +265,7 @@ public class A2AClientTests
         Assert.Equal(pushConfig.PushNotificationConfig.Url, parameters.PushNotificationConfig.Url);
         Assert.Equal(pushConfig.PushNotificationConfig.Id, parameters.PushNotificationConfig.Id);
         Assert.Equal(pushConfig.PushNotificationConfig.Token, parameters.PushNotificationConfig.Token);
-        Assert.Equal(pushConfig.PushNotificationConfig.Authentication!.Schemes, parameters.PushNotificationConfig.Authentication!.Schemes);
+        Assert.Equal(pushConfig.PushNotificationConfig.Authentication!.Scheme, parameters.PushNotificationConfig.Authentication!.Scheme);
     }
 
     [Fact]
@@ -282,7 +282,7 @@ public class A2AClientTests
                 Token = "tok",
                 Authentication = new PushNotificationAuthenticationInfo
                 {
-                    Schemes = ["Bearer"],
+                    Scheme = "Bearer",
                 }
             }
         };
@@ -297,7 +297,7 @@ public class A2AClientTests
         Assert.Equal(expectedConfig.TaskId, result.TaskId);
         Assert.Equal(expectedConfig.PushNotificationConfig.Url, result.PushNotificationConfig.Url);
         Assert.Equal(expectedConfig.PushNotificationConfig.Token, result.PushNotificationConfig.Token);
-        Assert.Equal(expectedConfig.PushNotificationConfig.Authentication!.Schemes, result.PushNotificationConfig.Authentication!.Schemes);
+        Assert.Equal(expectedConfig.PushNotificationConfig.Authentication!.Scheme, result.PushNotificationConfig.Authentication!.Scheme);
     }
 
     [Fact]
@@ -347,7 +347,7 @@ public class A2AClientTests
                 Token = "tok2",
                 Authentication = new PushNotificationAuthenticationInfo
                 {
-                    Schemes = ["Bearer"]
+                    Scheme = "Bearer"
                 }
             }
         };
@@ -364,7 +364,7 @@ public class A2AClientTests
         Assert.Equal(expectedConfig.TaskId, result.TaskId);
         Assert.Equal(expectedConfig.PushNotificationConfig.Url, result.PushNotificationConfig.Url);
         Assert.Equal(expectedConfig.PushNotificationConfig.Token, result.PushNotificationConfig.Token);
-        Assert.Equal(expectedConfig.PushNotificationConfig.Authentication!.Schemes, result.PushNotificationConfig.Authentication!.Schemes);
+        Assert.Equal(expectedConfig.PushNotificationConfig.Authentication!.Scheme, result.PushNotificationConfig.Authentication!.Scheme);
     }
 
     [Fact]

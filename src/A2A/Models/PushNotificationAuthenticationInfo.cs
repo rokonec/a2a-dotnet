@@ -3,19 +3,20 @@ using System.Text.Json.Serialization;
 namespace A2A;
 
 /// <summary>
-/// Defines authentication details for push notifications.
+/// Defines authentication details, used for push notifications.
 /// </summary>
 public sealed class PushNotificationAuthenticationInfo
 {
     /// <summary>
-    /// Supported authentication schemes - e.g. Basic, Bearer.
+    /// HTTP Authentication Scheme from the IANA registry.
+    /// Common values: "Bearer", "Basic", "Digest".
     /// </summary>
-    [JsonPropertyName("schemes")]
+    [JsonPropertyName("scheme")]
     [JsonRequired]
-    public List<string> Schemes { get; set; } = [];
+    public string Scheme { get; set; } = string.Empty;
 
     /// <summary>
-    /// Optional credentials.
+    /// Push Notification credentials. Format depends on the scheme.
     /// </summary>
     [JsonPropertyName("credentials")]
     public string? Credentials { get; set; }

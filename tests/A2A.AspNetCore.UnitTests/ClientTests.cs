@@ -110,7 +110,7 @@ public sealed class ClientTests : IClassFixture<JsonSchemaFixture>, IDisposable
                     Token = "test-token",
                     Authentication = new PushNotificationAuthenticationInfo
                     {
-                        Schemes = ["Bearer"]
+                        Scheme = "Bearer"
                     }
                 }
             };
@@ -132,7 +132,7 @@ public sealed class ClientTests : IClassFixture<JsonSchemaFixture>, IDisposable
                 Token = "test-token",
                 Authentication = new PushNotificationAuthenticationInfo()
                 {
-                    Schemes = ["Bearer"],
+                    Scheme = "Bearer",
                 }
             }
         };

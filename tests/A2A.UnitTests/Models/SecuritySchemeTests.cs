@@ -14,75 +14,73 @@ public class SecuritySchemeTests
     public void SecurityScheme_DescriptionProperty_SerializesCorrectly()
     {
         // Arrange
-        SecurityScheme scheme = new ApiKeySecurityScheme("X-API-Key", "header");
+        var scheme = new SecurityScheme { ApiKeySecurityScheme = new ApiKeySecurityScheme { Name = "X-API-Key", Location = "header", Description = "API key for authentication" } };
 
         // Act
         var json = JsonSerializer.Serialize(scheme, s_jsonOptions);
-        var deserialized = JsonSerializer.Deserialize<SecurityScheme>(json, s_jsonOptions) as ApiKeySecurityScheme;
+        var deserialized = JsonSerializer.Deserialize<SecurityScheme>(json, s_jsonOptions);
 
         // Assert
-        Assert.Contains("\"type\": \"apiKey\"", json);
+        Assert.Contains("\"apiKeySecurityScheme\"", json);
         Assert.Contains("\"description\": \"API key for authentication\"", json);
-        Assert.NotNull(deserialized);
-        Assert.Equal("API key for authentication", deserialized.Description);
+        Assert.NotNull(deserialized?.ApiKeySecurityScheme);
+        Assert.Equal("API key for authentication", deserialized.ApiKeySecurityScheme.Description);
     }
 
     [Fact]
     public void SecurityScheme_DescriptionProperty_CanBeNull()
     {
         // Arrange
-        SecurityScheme scheme = new HttpAuthSecurityScheme("bearer", null);
+        var scheme = new SecurityScheme { HttpAuthSecurityScheme = new HttpAuthSecurityScheme { Scheme = "bearer" } };
 
         // Act
         var json = JsonSerializer.Serialize(scheme, s_jsonOptions);
-        var deserialized = JsonSerializer.Deserialize<SecurityScheme>(json, s_jsonOptions) as HttpAuthSecurityScheme;
+        var deserialized = JsonSerializer.Deserialize<SecurityScheme>(json, s_jsonOptions);
 
         // Assert
         Assert.DoesNotContain("\"description\"", json);
-        Assert.Contains("\"type\": \"http\"", json);
-        Assert.NotNull(deserialized);
-        Assert.Null(deserialized.Description);
+        Assert.Contains("\"httpAuthSecurityScheme\"", json);
+        Assert.NotNull(deserialized?.HttpAuthSecurityScheme);
+        Assert.Null(deserialized.HttpAuthSecurityScheme.Description);
     }
 
     [Fact]
     public void ApiKeySecurityScheme_SerializesAndDeserializesCorrectly()
     {
         // Arrange
-        SecurityScheme scheme = new ApiKeySecurityScheme("X-API-Key", "header");
+        var scheme = new SecurityScheme { ApiKeySecurityScheme = new ApiKeySecurityScheme { Name = "X-API-Key", Location = "header", Description = "API key for authentication" } };
 
         // Act
         var json = JsonSerializer.Serialize(scheme, s_jsonOptions);
         var d = JsonSerializer.Deserialize<SecurityScheme>(json, s_jsonOptions);
 
         // Assert
-        Assert.Contains("\"type\": \"apiKey\"", json);
+        Assert.Contains("\"apiKeySecurityScheme\"", json);
         Assert.Contains("\"description\":", json);
 
-        var deserialized = Assert.IsType<ApiKeySecurityScheme>(d);
-        Assert.NotNull(deserialized);
-        Assert.Equal("API key for authentication", deserialized.Description);
-        Assert.Equal("X-API-Key", deserialized.Name);
-        Assert.Equal("header", deserialized.KeyLocation);
+        Assert.NotNull(d?.ApiKeySecurityScheme);
+        Assert.Equal("API key for authentication", d.ApiKeySecurityScheme.Description);
+        Assert.Equal("X-API-Key", d.ApiKeySecurityScheme.Name);
+        Assert.Equal("header", d.ApiKeySecurityScheme.Location);
     }
 
     [Fact]
     public void HttpAuthSecurityScheme_SerializesAndDeserializesCorrectly()
     {
         // Arrange
-        SecurityScheme scheme = new HttpAuthSecurityScheme("bearer");
+        var scheme = new SecurityScheme { HttpAuthSecurityScheme = new HttpAuthSecurityScheme { Scheme = "bearer" } };
 
         // Act
         var json = JsonSerializer.Serialize(scheme, s_jsonOptions);
         var d = JsonSerializer.Deserialize<SecurityScheme>(json, s_jsonOptions);
 
         // Assert
-        Assert.Contains("\"type\": \"http\"", json);
+        Assert.Contains("\"httpAuthSecurityScheme\"", json);
         Assert.DoesNotContain("\"description\"", json);
 
-        var deserialized = Assert.IsType<HttpAuthSecurityScheme>(d);
-        Assert.NotNull(deserialized);
-        Assert.Equal("bearer", deserialized.Scheme);
-        Assert.Null(deserialized.Description);
+        Assert.NotNull(d?.HttpAuthSecurityScheme);
+        Assert.Equal("bearer", d.HttpAuthSecurityScheme.Scheme);
+        Assert.Null(d.HttpAuthSecurityScheme.Description);
     }
 
     [Fact]
@@ -91,9 +89,9 @@ public class SecuritySchemeTests
         // Arrange
         var flows = new OAuthFlows
         {
-            Password = new(new("https://example.com/token"), scopes: new Dictionary<string, string>() { ["read"] = "Read access", ["write"] = "Write access" }),
+            Password = new PasswordOAuthFlow { TokenUrl = "https://example.com/token", Scopes = new Dictionary<string, string>() { ["read"] = "Read access", ["write"] = "Write access" } },
         };
-        SecurityScheme scheme = new OAuth2SecurityScheme(flows, "OAuth2 authentication");
+        var scheme = new SecurityScheme { OAuth2SecurityScheme = new OAuth2SecurityScheme { Flows = flows, Description = "OAuth2 authentication" } };
 
         // Act
         var json = JsonSerializer.Serialize(scheme, s_jsonOptions);
@@ -102,21 +100,21 @@ public class SecuritySchemeTests
         // Assert
         Assert.Contains("\"description\": \"OAuth2 authentication\"", json);
 
-        var deserialized = Assert.IsType<OAuth2SecurityScheme>(d); Assert.Contains("\"type\": \"oauth2\"", json);
-        Assert.NotNull(deserialized);
-        Assert.Equal("OAuth2 authentication", deserialized.Description);
-        Assert.NotNull(deserialized.Flows);
-        Assert.Null(deserialized.Flows.ClientCredentials);
-        Assert.Null(deserialized.Flows.Implicit);
-        Assert.Null(deserialized.Flows.AuthorizationCode);
-        Assert.NotNull(deserialized.Flows.Password);
-        Assert.Equal("https://example.com/token", deserialized.Flows.Password.TokenUrl.ToString());
-        Assert.NotNull(deserialized.Flows.Password.Scopes);
-        Assert.Equal(2, deserialized.Flows.Password.Scopes.Count);
-        Assert.Contains("read", deserialized.Flows.Password.Scopes.Keys);
-        Assert.Contains("write", deserialized.Flows.Password.Scopes.Keys);
-        Assert.Equal("Read access", deserialized.Flows.Password.Scopes["read"]);
-        Assert.Equal("Write access", deserialized.Flows.Password.Scopes["write"]);
+        Assert.NotNull(d?.OAuth2SecurityScheme);
+        Assert.Contains("\"oauth2SecurityScheme\"", json);
+        Assert.Equal("OAuth2 authentication", d.OAuth2SecurityScheme.Description);
+        Assert.NotNull(d.OAuth2SecurityScheme.Flows);
+        Assert.Null(d.OAuth2SecurityScheme.Flows.ClientCredentials);
+        Assert.Null(d.OAuth2SecurityScheme.Flows.Implicit);
+        Assert.Null(d.OAuth2SecurityScheme.Flows.AuthorizationCode);
+        Assert.NotNull(d.OAuth2SecurityScheme.Flows.Password);
+        Assert.Equal("https://example.com/token", d.OAuth2SecurityScheme.Flows.Password.TokenUrl);
+        Assert.NotNull(d.OAuth2SecurityScheme.Flows.Password.Scopes);
+        Assert.Equal(2, d.OAuth2SecurityScheme.Flows.Password.Scopes.Count);
+        Assert.Contains("read", d.OAuth2SecurityScheme.Flows.Password.Scopes.Keys);
+        Assert.Contains("write", d.OAuth2SecurityScheme.Flows.Password.Scopes.Keys);
+        Assert.Equal("Read access", d.OAuth2SecurityScheme.Flows.Password.Scopes["read"]);
+        Assert.Equal("Write access", d.OAuth2SecurityScheme.Flows.Password.Scopes["write"]);
     }
 
     [Fact]
@@ -125,14 +123,15 @@ public class SecuritySchemeTests
         // Arrange
         var rawJson = """
         {
-            "type": "oauth2",
-            "description": "OAuth2 authentication",
-            "flows": {
-                "password": {
-                    "tokenUrl": "https://example.com/token",
-                    "scopes": {
-                        "read": "Read access",
-                        "write": "Write access"
+            "oauth2SecurityScheme": {
+                "description": "OAuth2 authentication",
+                "flows": {
+                    "password": {
+                        "tokenUrl": "https://example.com/token",
+                        "scopes": {
+                            "read": "Read access",
+                            "write": "Write access"
+                        }
                     }
                 }
             }
@@ -143,57 +142,54 @@ public class SecuritySchemeTests
         var d = JsonSerializer.Deserialize<SecurityScheme>(rawJson, s_jsonOptions);
 
         // Assert
-        var deserialized = Assert.IsType<OAuth2SecurityScheme>(d);
-        Assert.NotNull(deserialized);
-        Assert.Equal("OAuth2 authentication", deserialized.Description);
-        Assert.NotNull(deserialized.Flows);
-        Assert.Null(deserialized.Flows.ClientCredentials);
-        Assert.Null(deserialized.Flows.Implicit);
-        Assert.Null(deserialized.Flows.AuthorizationCode);
-        Assert.NotNull(deserialized.Flows.Password);
-        Assert.Equal("https://example.com/token", deserialized.Flows.Password.TokenUrl.ToString());
-        Assert.NotNull(deserialized.Flows.Password.Scopes);
-        Assert.Equal(2, deserialized.Flows.Password.Scopes.Count);
-        Assert.Contains("read", deserialized.Flows.Password.Scopes.Keys);
-        Assert.Contains("write", deserialized.Flows.Password.Scopes.Keys);
-        Assert.Equal("Read access", deserialized.Flows.Password.Scopes["read"]);
-        Assert.Equal("Write access", deserialized.Flows.Password.Scopes["write"]);
+        Assert.NotNull(d?.OAuth2SecurityScheme);
+        Assert.Equal("OAuth2 authentication", d.OAuth2SecurityScheme.Description);
+        Assert.NotNull(d.OAuth2SecurityScheme.Flows);
+        Assert.Null(d.OAuth2SecurityScheme.Flows.ClientCredentials);
+        Assert.Null(d.OAuth2SecurityScheme.Flows.Implicit);
+        Assert.Null(d.OAuth2SecurityScheme.Flows.AuthorizationCode);
+        Assert.NotNull(d.OAuth2SecurityScheme.Flows.Password);
+        Assert.Equal("https://example.com/token", d.OAuth2SecurityScheme.Flows.Password.TokenUrl);
+        Assert.NotNull(d.OAuth2SecurityScheme.Flows.Password.Scopes);
+        Assert.Equal(2, d.OAuth2SecurityScheme.Flows.Password.Scopes.Count);
+        Assert.Contains("read", d.OAuth2SecurityScheme.Flows.Password.Scopes.Keys);
+        Assert.Contains("write", d.OAuth2SecurityScheme.Flows.Password.Scopes.Keys);
+        Assert.Equal("Read access", d.OAuth2SecurityScheme.Flows.Password.Scopes["read"]);
+        Assert.Equal("Write access", d.OAuth2SecurityScheme.Flows.Password.Scopes["write"]);
     }
 
     [Fact]
     public void OpenIdConnectSecurityScheme_SerializesAndDeserializesCorrectly()
     {
         // Arrange
-        SecurityScheme scheme = new OpenIdConnectSecurityScheme(new("https://example.com/.well-known/openid_configuration"), "OpenID Connect authentication");
+        var scheme = new SecurityScheme { OpenIdConnectSecurityScheme = new OpenIdConnectSecurityScheme { OpenIdConnectUrl = "https://example.com/.well-known/openid_configuration", Description = "OpenID Connect authentication" } };
 
         // Act
         var json = JsonSerializer.Serialize(scheme, s_jsonOptions);
         var d = JsonSerializer.Deserialize<SecurityScheme>(json, s_jsonOptions);
 
         // Assert
-        Assert.Contains("\"type\": \"openIdConnect\"", json);
+        Assert.Contains("\"openIdConnectSecurityScheme\"", json);
         Assert.Contains("\"description\": \"OpenID Connect authentication\"", json);
 
-        var deserialized = Assert.IsType<OpenIdConnectSecurityScheme>(d);
-        Assert.NotNull(deserialized);
-        Assert.Equal("OpenID Connect authentication", deserialized.Description);
-        Assert.Equal("https://example.com/.well-known/openid_configuration", deserialized.OpenIdConnectUrl.ToString());
+        Assert.NotNull(d?.OpenIdConnectSecurityScheme);
+        Assert.Equal("OpenID Connect authentication", d.OpenIdConnectSecurityScheme.Description);
+        Assert.Equal("https://example.com/.well-known/openid_configuration", d.OpenIdConnectSecurityScheme.OpenIdConnectUrl);
     }
 
     [Fact]
     public void MutualTlsSecurityScheme_DeserializesFromBaseSecurityScheme()
     {
         // Arrange
-        SecurityScheme scheme = new MutualTlsSecurityScheme();
+        var scheme = new SecurityScheme { MtlsSecurityScheme = new MutualTlsSecurityScheme { Description = "Mutual TLS authentication" } };
 
         // Act
         var json = JsonSerializer.Serialize(scheme, s_jsonOptions);
         var d = JsonSerializer.Deserialize<SecurityScheme>(json, s_jsonOptions);
 
         // Assert
-        var deserialized = Assert.IsType<MutualTlsSecurityScheme>(d);
-        Assert.NotNull(deserialized);
-        Assert.Equal("Mutual TLS authentication", deserialized.Description);
+        Assert.NotNull(d?.MtlsSecurityScheme);
+        Assert.Equal("Mutual TLS authentication", d.MtlsSecurityScheme.Description);
     }
 
     [Fact]
@@ -202,9 +198,10 @@ public class SecuritySchemeTests
         // Arrange
         var rawJson = """
         {
-            "type": "openIdConnect",
-            "description": "OpenID Connect authentication",
-            "openIdConnectUrl": "https://example.com/.well-known/openid_configuration"
+            "openIdConnectSecurityScheme": {
+                "description": "OpenID Connect authentication",
+                "openIdConnectUrl": "https://example.com/.well-known/openid_configuration"
+            }
         }
         """;
 
@@ -212,9 +209,8 @@ public class SecuritySchemeTests
         var d = JsonSerializer.Deserialize<SecurityScheme>(rawJson, s_jsonOptions);
 
         // Assert
-        var deserialized = Assert.IsType<OpenIdConnectSecurityScheme>(d);
-        Assert.NotNull(deserialized);
-        Assert.Equal("OpenID Connect authentication", deserialized.Description);
-        Assert.Equal("https://example.com/.well-known/openid_configuration", deserialized.OpenIdConnectUrl.ToString());
+        Assert.NotNull(d?.OpenIdConnectSecurityScheme);
+        Assert.Equal("OpenID Connect authentication", d.OpenIdConnectSecurityScheme.Description);
+        Assert.Equal("https://example.com/.well-known/openid_configuration", d.OpenIdConnectSecurityScheme.OpenIdConnectUrl);
     }
 }

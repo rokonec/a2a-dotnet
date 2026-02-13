@@ -228,7 +228,7 @@ public static class A2ACli
                 Url = $"http://{notificationReceiverHost}:{notificationReceiverPort}/notify",
                 Authentication = new PushNotificationAuthenticationInfo
                 {
-                    Schemes = ["bearer"]
+                    Scheme = "bearer"
                 }
             };
         }
