@@ -302,12 +302,59 @@ internal static class A2AHttpProcessor
 
             A2AErrorCode.ContentTypeNotSupported => Results.Problem(detail: exception.Message, statusCode: StatusCodes.Status422UnprocessableEntity),
 
+            A2AErrorCode.InvalidAgentResponse => Results.Problem(detail: exception.Message, statusCode: StatusCodes.Status502BadGateway),
+
+            A2AErrorCode.ExtendedAgentCardNotConfigured or
+            A2AErrorCode.ExtensionSupportRequired or
+            A2AErrorCode.VersionNotSupported => Results.Problem(detail: exception.Message, statusCode: StatusCodes.Status400BadRequest),
+
             A2AErrorCode.InternalError => Results.Problem(detail: exception.Message, statusCode: StatusCodes.Status500InternalServerError),
 
             // Default case for unhandled error codes - this should never happen with current A2AErrorCode enum values
             // but provides a safety net for future enum additions or unexpected values
             _ => Results.Problem(detail: exception.Message, statusCode: StatusCodes.Status500InternalServerError)
         };
+    }
+
+    internal static Task<IResult> ListTasksAsync(ITaskManager taskManager, ILogger logger,
+        string? contextId, string? status, int? pageSize, string? pageToken, int? historyLength,
+        CancellationToken cancellationToken)
+    {
+        return WithExceptionHandlingAsync(logger, "ListTasks", async (ct) =>
+        {
+            var request = new ListTasksRequest
+            {
+                ContextId = contextId,
+                PageSize = pageSize,
+                PageToken = pageToken,
+                HistoryLength = historyLength,
+            };
+            if (!string.IsNullOrEmpty(status) && Enum.TryParse<TaskState>(status, ignoreCase: true, out var taskState))
+            {
+                request.Status = taskState;
+            }
+            var result = await taskManager.ListTasksAsync(request, ct).ConfigureAwait(false);
+            return Results.Ok(result);
+        }, cancellationToken: cancellationToken);
+    }
+
+    internal static Task<IResult> GetExtendedAgentCardAsync(ITaskManager taskManager, ILogger logger,
+        string agentUrl, CancellationToken cancellationToken)
+    {
+        return WithExceptionHandlingAsync(logger, "GetExtendedAgentCard", async (ct) =>
+        {
+            var card = await taskManager.GetExtendedAgentCardAsync(agentUrl, ct).ConfigureAwait(false);
+            return Results.Ok(card);
+        }, cancellationToken: cancellationToken);
+    }
+
+    internal static Task<IResult> DeletePushNotificationAsync(ITaskManager taskManager, ILogger logger,
+        string taskId, string configId, CancellationToken cancellationToken)
+    {
+        return WithExceptionHandlingAsync(logger, "DeletePushNotification", (ct) =>
+        {
+            throw new A2AException("DeletePushNotificationConfig is not yet implemented.", A2AErrorCode.UnsupportedOperation);
+        }, taskId: taskId, cancellationToken: cancellationToken);
     }
 }
 
