@@ -28,7 +28,7 @@ public class TaskUpdateEventEnumeratorTests
     {
         // Arrange
         var enumerator = new TaskUpdateEventEnumerator();
-        var evt = new TaskStatusUpdateEvent { TaskId = "t2", Status = new AgentTaskStatus { State = TaskState.Completed }, Final = true };
+        var evt = new TaskStatusUpdateEvent { TaskId = "t2", Status = new AgentTaskStatus { State = TaskState.Completed } };
         enumerator.NotifyFinalEvent(evt);
 
         // Act
@@ -50,7 +50,7 @@ public class TaskUpdateEventEnumeratorTests
         var enumerator = new TaskUpdateEventEnumerator();
         var evt1 = new TaskStatusUpdateEvent { TaskId = "t3", Status = new AgentTaskStatus { State = TaskState.Submitted } };
         var evt2 = new TaskStatusUpdateEvent { TaskId = "t3", Status = new AgentTaskStatus { State = TaskState.Working } };
-        var evt3 = new TaskStatusUpdateEvent { TaskId = "t3", Status = new AgentTaskStatus { State = TaskState.Completed }, Final = true };
+        var evt3 = new TaskStatusUpdateEvent { TaskId = "t3", Status = new AgentTaskStatus { State = TaskState.Completed } };
         enumerator.NotifyEvent(evt1);
         enumerator.NotifyEvent(evt2);
         enumerator.NotifyFinalEvent(evt3);

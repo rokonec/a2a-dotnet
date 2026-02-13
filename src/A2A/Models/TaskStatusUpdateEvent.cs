@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 namespace A2A;
 
 /// <summary>
-/// Event sent by server during sendStream or subscribe requests.
+/// Event sent by server during streaming or subscribe requests.
 /// </summary>
 public sealed class TaskStatusUpdateEvent() : TaskUpdateEvent(A2AEventKind.StatusUpdate)
 {
@@ -13,10 +13,4 @@ public sealed class TaskStatusUpdateEvent() : TaskUpdateEvent(A2AEventKind.Statu
     [JsonPropertyName("status")]
     [JsonRequired]
     public AgentTaskStatus Status { get; set; } = new();
-
-    /// <summary>
-    /// Gets or sets a value indicating whether this indicates the end of the event stream.
-    /// </summary>
-    [JsonPropertyName("final")]
-    public bool Final { get; set; }
 }

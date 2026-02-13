@@ -382,10 +382,10 @@ public sealed class TaskManager : ITaskManager
                 {
                     TaskId = taskId,
                     Status = agentStatus,
-                    Final = final
                 };
 
-                if (final)
+                bool isTerminal = final || status is TaskState.Completed or TaskState.Canceled or TaskState.Failed or TaskState.Rejected;
+                if (isTerminal)
                 {
                     activity?.SetTag("event.type", "final");
                     enumerator.NotifyFinalEvent(taskUpdateEvent);

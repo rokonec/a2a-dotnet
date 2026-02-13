@@ -13,6 +13,7 @@ public abstract class TaskUpdateEvent(string kind) : A2AEvent(kind)
     /// Gets or sets the task ID.
     /// </summary>
     [JsonPropertyName("taskId")]
+    [JsonRequired]
     public string TaskId { get; set; } = string.Empty;
 
     /// <summary>

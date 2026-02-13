@@ -138,7 +138,6 @@ namespace A2A.UnitTests.Models
             Assert.Equal("t-5", taskStatusUpdateEvent.TaskId);
             Assert.Equal("c-5", taskStatusUpdateEvent.ContextId);
             Assert.Equal(TaskState.Working, taskStatusUpdateEvent.Status.State);
-            Assert.False(taskStatusUpdateEvent.Final);
             Assert.NotNull(taskStatusUpdateEvent.Metadata);
             Assert.Single(taskStatusUpdateEvent.Metadata);
             Assert.Equal(expectedMetadata["createdAt"], taskStatusUpdateEvent.Metadata["createdAt"].GetString());
