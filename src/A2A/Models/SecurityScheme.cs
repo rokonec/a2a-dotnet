@@ -8,7 +8,6 @@ namespace A2A;
 /// This is a discriminated union type based on the OpenAPI 3.2 Security Scheme Object.
 /// Exactly one of the scheme properties must be set.
 /// </summary>
-[JsonConverter(typeof(SecuritySchemeConverter))]
 public sealed class SecurityScheme
 {
     /// <summary>
@@ -282,86 +281,4 @@ public sealed class AuthenticationInfo
     /// </summary>
     [JsonPropertyName("credentials")]
     public string? Credentials { get; set; }
-}
-
-internal sealed class SecuritySchemeConverter : JsonConverter<SecurityScheme>
-{
-    public override SecurityScheme Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
-    {
-        if (reader.TokenType != JsonTokenType.StartObject)
-        {
-            throw new A2AException("Expected JSON object for SecurityScheme", A2AErrorCode.InvalidRequest);
-        }
-
-        using var document = JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        var scheme = new SecurityScheme();
-        var raw = root.GetRawText();
-
-        if (root.TryGetProperty("apiKeySecurityScheme", out _))
-        {
-            scheme.ApiKeySecurityScheme = JsonSerializer.Deserialize(
-                root.GetProperty("apiKeySecurityScheme").GetRawText(),
-                options.GetTypeInfo(typeof(ApiKeySecurityScheme))) as ApiKeySecurityScheme;
-        }
-        else if (root.TryGetProperty("httpAuthSecurityScheme", out _))
-        {
-            scheme.HttpAuthSecurityScheme = JsonSerializer.Deserialize(
-                root.GetProperty("httpAuthSecurityScheme").GetRawText(),
-                options.GetTypeInfo(typeof(HttpAuthSecurityScheme))) as HttpAuthSecurityScheme;
-        }
-        else if (root.TryGetProperty("oauth2SecurityScheme", out _))
-        {
-            scheme.OAuth2SecurityScheme = JsonSerializer.Deserialize(
-                root.GetProperty("oauth2SecurityScheme").GetRawText(),
-                options.GetTypeInfo(typeof(OAuth2SecurityScheme))) as OAuth2SecurityScheme;
-        }
-        else if (root.TryGetProperty("openIdConnectSecurityScheme", out _))
-        {
-            scheme.OpenIdConnectSecurityScheme = JsonSerializer.Deserialize(
-                root.GetProperty("openIdConnectSecurityScheme").GetRawText(),
-                options.GetTypeInfo(typeof(OpenIdConnectSecurityScheme))) as OpenIdConnectSecurityScheme;
-        }
-        else if (root.TryGetProperty("mtlsSecurityScheme", out _))
-        {
-            scheme.MtlsSecurityScheme = JsonSerializer.Deserialize(
-                root.GetProperty("mtlsSecurityScheme").GetRawText(),
-                options.GetTypeInfo(typeof(MutualTlsSecurityScheme))) as MutualTlsSecurityScheme;
-        }
-
-        return scheme;
-    }
-
-    public override void Write(Utf8JsonWriter writer, SecurityScheme value, JsonSerializerOptions options)
-    {
-        writer.WriteStartObject();
-
-        if (value.ApiKeySecurityScheme is { } apiKey)
-        {
-            writer.WritePropertyName("apiKeySecurityScheme");
-            JsonSerializer.Serialize(writer, apiKey, options.GetTypeInfo(typeof(ApiKeySecurityScheme)));
-        }
-        else if (value.HttpAuthSecurityScheme is { } httpAuth)
-        {
-            writer.WritePropertyName("httpAuthSecurityScheme");
-            JsonSerializer.Serialize(writer, httpAuth, options.GetTypeInfo(typeof(HttpAuthSecurityScheme)));
-        }
-        else if (value.OAuth2SecurityScheme is { } oauth2)
-        {
-            writer.WritePropertyName("oauth2SecurityScheme");
-            JsonSerializer.Serialize(writer, oauth2, options.GetTypeInfo(typeof(OAuth2SecurityScheme)));
-        }
-        else if (value.OpenIdConnectSecurityScheme is { } oidc)
-        {
-            writer.WritePropertyName("openIdConnectSecurityScheme");
-            JsonSerializer.Serialize(writer, oidc, options.GetTypeInfo(typeof(OpenIdConnectSecurityScheme)));
-        }
-        else if (value.MtlsSecurityScheme is { } mtls)
-        {
-            writer.WritePropertyName("mtlsSecurityScheme");
-            JsonSerializer.Serialize(writer, mtls, options.GetTypeInfo(typeof(MutualTlsSecurityScheme)));
-        }
-
-        writer.WriteEndObject();
-    }
 }
