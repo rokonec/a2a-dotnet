@@ -169,11 +169,24 @@ public interface ITaskManager
     /// <summary>
     /// Retrieves the push notification configuration for a specific task.
     /// </summary>
-    /// <remarks>
-    /// Returns the callback URL and authentication settings configured for receiving task update notifications.
-    /// </remarks>
     /// <param name="notificationConfigParams">Parameters containing the task ID and optional push notification config ID.</param>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
     /// <returns>The push notification configuration if found, null otherwise.</returns>
     Task<TaskPushNotificationConfig?> GetPushNotificationAsync(GetTaskPushNotificationConfigParams? notificationConfigParams, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Lists tasks with optional filtering and pagination.
+    /// </summary>
+    /// <param name="request">The list tasks request with filtering parameters.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
+    /// <returns>The list of tasks matching the criteria.</returns>
+    Task<ListTasksResponse> ListTasksAsync(ListTasksRequest request, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Retrieves the extended agent card for authenticated users.
+    /// </summary>
+    /// <param name="agentUrl">The URL of the agent.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
+    /// <returns>The extended agent card.</returns>
+    Task<AgentCard> GetExtendedAgentCardAsync(string agentUrl, CancellationToken cancellationToken = default);
 }

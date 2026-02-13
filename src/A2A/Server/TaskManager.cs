@@ -458,5 +458,18 @@ public sealed class TaskManager : ITaskManager
             throw;
         }
     }
-    // TODO: Implement UpdateArtifact method
+
+    /// <inheritdoc />
+    public Task<ListTasksResponse> ListTasksAsync(ListTasksRequest request, CancellationToken cancellationToken = default)
+    {
+        // Default implementation - not yet fully supported
+        throw new A2AException("ListTasks is not yet implemented.", A2AErrorCode.UnsupportedOperation);
+    }
+
+    /// <inheritdoc />
+    public Task<AgentCard> GetExtendedAgentCardAsync(string agentUrl, CancellationToken cancellationToken = default)
+    {
+        // Delegates to the same handler as the public agent card by default
+        return OnAgentCardQuery(agentUrl, cancellationToken);
+    }
 }
