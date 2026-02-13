@@ -94,29 +94,29 @@ public static class A2AJsonRpcProcessor
 
         switch (method)
         {
-            case A2AMethods.MessageSend:
+            case A2AMethods.SendMessage:
                 var taskSendParams = DeserializeAndValidate<MessageSendParams>(parameters.Value);
                 var a2aResponse = await taskManager.SendMessageAsync(taskSendParams, cancellationToken).ConfigureAwait(false);
                 response = JsonRpcResponse.CreateJsonRpcResponse(requestId, a2aResponse);
                 break;
-            case A2AMethods.TaskGet:
+            case A2AMethods.GetTask:
                 var taskIdParams = DeserializeAndValidate<TaskQueryParams>(parameters.Value);
                 var getAgentTask = await taskManager.GetTaskAsync(taskIdParams, cancellationToken).ConfigureAwait(false);
                 response = getAgentTask is null
                     ? JsonRpcResponse.TaskNotFoundResponse(requestId)
                     : JsonRpcResponse.CreateJsonRpcResponse(requestId, getAgentTask);
                 break;
-            case A2AMethods.TaskCancel:
+            case A2AMethods.CancelTask:
                 var taskIdParamsCancel = DeserializeAndValidate<TaskIdParams>(parameters.Value);
                 var cancelledTask = await taskManager.CancelTaskAsync(taskIdParamsCancel, cancellationToken).ConfigureAwait(false);
                 response = JsonRpcResponse.CreateJsonRpcResponse(requestId, cancelledTask);
                 break;
-            case A2AMethods.TaskPushNotificationConfigSet:
+            case A2AMethods.CreateTaskPushNotificationConfig:
                 var taskPushNotificationConfig = DeserializeAndValidate<TaskPushNotificationConfig>(parameters.Value);
                 var setConfig = await taskManager.SetPushNotificationAsync(taskPushNotificationConfig, cancellationToken).ConfigureAwait(false);
                 response = JsonRpcResponse.CreateJsonRpcResponse(requestId, setConfig);
                 break;
-            case A2AMethods.TaskPushNotificationConfigGet:
+            case A2AMethods.GetTaskPushNotificationConfig:
                 var notificationConfigParams = DeserializeAndValidate<GetTaskPushNotificationConfigParams>(parameters.Value);
                 var getConfig = await taskManager.GetPushNotificationAsync(notificationConfigParams, cancellationToken).ConfigureAwait(false);
                 response = JsonRpcResponse.CreateJsonRpcResponse(requestId, getConfig);
@@ -181,11 +181,11 @@ public static class A2AJsonRpcProcessor
 
         switch (method)
         {
-            case A2AMethods.TaskSubscribe:
+            case A2AMethods.SubscribeToTask:
                 var taskIdParams = DeserializeAndValidate<TaskIdParams>(parameters.Value);
                 var taskEvents = taskManager.SubscribeToTaskAsync(taskIdParams, cancellationToken);
                 return new JsonRpcStreamedResult(taskEvents, requestId);
-            case A2AMethods.MessageStream:
+            case A2AMethods.SendStreamingMessage:
                 var taskSendParams = DeserializeAndValidate<MessageSendParams>(parameters.Value);
                 var sendEvents = taskManager.SendMessageStreamingAsync(taskSendParams, cancellationToken);
                 return new JsonRpcStreamedResult(sendEvents, requestId);

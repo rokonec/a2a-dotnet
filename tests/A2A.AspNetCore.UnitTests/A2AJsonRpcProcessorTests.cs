@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http;
 using System.Text;
 using System.Text.Json;
 
@@ -19,7 +19,7 @@ public class A2AJsonRpcProcessorTests
         var jsonRequest = $$"""
         {
             "jsonrpc": "2.0",
-            "method": "{{A2AMethods.MessageSend}}",
+            "method": "{{A2AMethods.SendMessage}}",
             "id": {{idValue}},
             "params": {
                 "message": {
@@ -64,7 +64,7 @@ public class A2AJsonRpcProcessorTests
         var jsonRequest = $$"""
         {
             "jsonrpc": "2.0",
-            "method": "{{A2AMethods.MessageSend}}",
+            "method": "{{A2AMethods.SendMessage}}",
             "id": "some",
             "params": {
                 "message": {
@@ -158,7 +158,7 @@ public class A2AJsonRpcProcessorTests
         var jsonRequest = $$"""
         {
             "jsonrpc": "2.0",
-            "method": "{{A2AMethods.MessageSend}}",
+            "method": "{{A2AMethods.SendMessage}}",
             "id": "test-id",
             "params": {{paramsValue}}
         }
@@ -203,7 +203,7 @@ public class A2AJsonRpcProcessorTests
         var jsonRequest = $$"""
         {
             "jsonrpc": "2.0",
-            "method": "{{A2AMethods.MessageSend}}",
+            "method": "{{A2AMethods.SendMessage}}",
             "id": "test-content-validation",
             "params": {{paramsValue}}
         }
@@ -238,7 +238,7 @@ public class A2AJsonRpcProcessorTests
         JsonRpcRequest req = new()
         {
             Id = "1",
-            Method = A2AMethods.MessageSend,
+            Method = A2AMethods.SendMessage,
             Params = ToJsonElement(sendParams)
         };
 
@@ -274,7 +274,7 @@ public class A2AJsonRpcProcessorTests
         var req = new JsonRpcRequest
         {
             Id = "2",
-            Method = A2AMethods.MessageSend,
+            Method = A2AMethods.SendMessage,
             Params = null
         };
 
@@ -309,7 +309,7 @@ public class A2AJsonRpcProcessorTests
         var queryParams = new TaskQueryParams { Id = task.Id };
 
         // Act
-        var result = await A2AJsonRpcProcessor.SingleResponseAsync(taskManager, "4", A2AMethods.TaskGet, ToJsonElement(queryParams), CancellationToken.None);
+        var result = await A2AJsonRpcProcessor.SingleResponseAsync(taskManager, "4", A2AMethods.GetTask, ToJsonElement(queryParams), CancellationToken.None);
 
         // Assert
         var responseResult = Assert.IsType<JsonRpcResponseResult>(result);
@@ -333,7 +333,7 @@ public class A2AJsonRpcProcessorTests
         TaskQueryParams queryParams = new() { Id = "doesNotMatter", HistoryLength = -1 };
 
         A2AException result = await Assert.ThrowsAsync<A2AException>(
-            () => A2AJsonRpcProcessor.SingleResponseAsync(taskManager, "4", A2AMethods.TaskGet, ToJsonElement(queryParams), CancellationToken.None));
+            () => A2AJsonRpcProcessor.SingleResponseAsync(taskManager, "4", A2AMethods.GetTask, ToJsonElement(queryParams), CancellationToken.None));
 
         Assert.Equal(A2AErrorCode.InvalidParams, result.ErrorCode);
         Assert.Equal("History length cannot be negative", result.Message);
@@ -348,7 +348,7 @@ public class A2AJsonRpcProcessorTests
         var cancelParams = new TaskIdParams { Id = newTask.Id };
 
         // Act
-        var result = await A2AJsonRpcProcessor.SingleResponseAsync(taskManager, "5", A2AMethods.TaskCancel, ToJsonElement(cancelParams), CancellationToken.None);
+        var result = await A2AJsonRpcProcessor.SingleResponseAsync(taskManager, "5", A2AMethods.CancelTask, ToJsonElement(cancelParams), CancellationToken.None);
 
         // Assert
         var responseResult = Assert.IsType<JsonRpcResponseResult>(result);
@@ -380,7 +380,7 @@ public class A2AJsonRpcProcessorTests
         };
 
         // Act
-        var result = await A2AJsonRpcProcessor.SingleResponseAsync(taskManager, "6", A2AMethods.TaskPushNotificationConfigSet, ToJsonElement(config), CancellationToken.None);
+        var result = await A2AJsonRpcProcessor.SingleResponseAsync(taskManager, "6", A2AMethods.CreateTaskPushNotificationConfig, ToJsonElement(config), CancellationToken.None);
 
         // Assert
         var responseResult = Assert.IsType<JsonRpcResponseResult>(result);
@@ -418,7 +418,7 @@ public class A2AJsonRpcProcessorTests
         var getParams = new GetTaskPushNotificationConfigParams { Id = task.Id };
 
         // Act
-        var result = await A2AJsonRpcProcessor.SingleResponseAsync(taskManager, "7", A2AMethods.TaskPushNotificationConfigGet, ToJsonElement(getParams), CancellationToken.None);
+        var result = await A2AJsonRpcProcessor.SingleResponseAsync(taskManager, "7", A2AMethods.GetTaskPushNotificationConfig, ToJsonElement(getParams), CancellationToken.None);
 
         // Assert
         var responseResult = Assert.IsType<JsonRpcResponseResult>(result);
@@ -461,7 +461,7 @@ public class A2AJsonRpcProcessorTests
         };
 
         // Act
-        var result = await A2AJsonRpcProcessor.SingleResponseAsync(taskManager, "8", A2AMethods.TaskPushNotificationConfigGet, ToJsonElement(getParams), CancellationToken.None);
+        var result = await A2AJsonRpcProcessor.SingleResponseAsync(taskManager, "8", A2AMethods.GetTaskPushNotificationConfig, ToJsonElement(getParams), CancellationToken.None);
 
         // Assert
         var responseResult = Assert.IsType<JsonRpcResponseResult>(result);
@@ -487,7 +487,7 @@ public class A2AJsonRpcProcessorTests
         var taskManager = new TaskManager();
 
         // Act
-        var result = A2AJsonRpcProcessor.StreamResponse(taskManager, "10", A2AMethods.MessageStream, null, CancellationToken.None);
+        var result = A2AJsonRpcProcessor.StreamResponse(taskManager, "10", A2AMethods.SendStreamingMessage, null, CancellationToken.None);
 
         // Assert
         var responseResult = Assert.IsType<JsonRpcResponseResult>(result);

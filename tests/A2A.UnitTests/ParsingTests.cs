@@ -53,7 +53,7 @@ public class ParsingTests
         };
         var jsonRpcRequest = new JsonRpcRequest
         {
-            Method = A2AMethods.MessageSend,
+            Method = A2AMethods.SendMessage,
             Params = JsonSerializer.SerializeToElement(taskSendParams),
         };
         var json = JsonSerializer.Serialize(jsonRpcRequest);

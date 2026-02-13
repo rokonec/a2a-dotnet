@@ -35,7 +35,7 @@ public sealed class A2AClient : IA2AClient
     public Task<A2AResponse> SendMessageAsync(MessageSendParams taskSendParams, CancellationToken cancellationToken = default) =>
         SendRpcRequestAsync(
             taskSendParams ?? throw new ArgumentNullException(nameof(taskSendParams)),
-            A2AMethods.MessageSend,
+            A2AMethods.SendMessage,
             A2AJsonUtilities.JsonContext.Default.MessageSendParams,
             A2AJsonUtilities.JsonContext.Default.A2AResponse,
             cancellationToken);
@@ -44,7 +44,7 @@ public sealed class A2AClient : IA2AClient
     public Task<AgentTask> GetTaskAsync(string taskId, CancellationToken cancellationToken = default) =>
         SendRpcRequestAsync(
             new() { Id = string.IsNullOrEmpty(taskId) ? throw new ArgumentNullException(nameof(taskId)) : taskId },
-            A2AMethods.TaskGet,
+            A2AMethods.GetTask,
             A2AJsonUtilities.JsonContext.Default.TaskIdParams,
             A2AJsonUtilities.JsonContext.Default.AgentTask,
             cancellationToken);
@@ -53,7 +53,7 @@ public sealed class A2AClient : IA2AClient
     public Task<AgentTask> CancelTaskAsync(TaskIdParams taskIdParams, CancellationToken cancellationToken = default) =>
         SendRpcRequestAsync(
             taskIdParams ?? throw new ArgumentNullException(nameof(taskIdParams)),
-            A2AMethods.TaskCancel,
+            A2AMethods.CancelTask,
             A2AJsonUtilities.JsonContext.Default.TaskIdParams,
             A2AJsonUtilities.JsonContext.Default.AgentTask,
             cancellationToken);
@@ -62,7 +62,7 @@ public sealed class A2AClient : IA2AClient
     public Task<TaskPushNotificationConfig> SetPushNotificationAsync(TaskPushNotificationConfig pushNotificationConfig, CancellationToken cancellationToken = default) =>
         SendRpcRequestAsync(
             pushNotificationConfig ?? throw new ArgumentNullException(nameof(pushNotificationConfig)),
-            A2AMethods.TaskPushNotificationConfigSet,
+            A2AMethods.CreateTaskPushNotificationConfig,
             A2AJsonUtilities.JsonContext.Default.TaskPushNotificationConfig,
             A2AJsonUtilities.JsonContext.Default.TaskPushNotificationConfig,
             cancellationToken);
@@ -71,7 +71,7 @@ public sealed class A2AClient : IA2AClient
     public Task<TaskPushNotificationConfig> GetPushNotificationAsync(GetTaskPushNotificationConfigParams notificationConfigParams, CancellationToken cancellationToken = default) =>
         SendRpcRequestAsync(
             notificationConfigParams ?? throw new ArgumentNullException(nameof(notificationConfigParams)),
-            A2AMethods.TaskPushNotificationConfigGet,
+            A2AMethods.GetTaskPushNotificationConfig,
             A2AJsonUtilities.JsonContext.Default.GetTaskPushNotificationConfigParams,
             A2AJsonUtilities.JsonContext.Default.TaskPushNotificationConfig,
             cancellationToken);
@@ -80,7 +80,7 @@ public sealed class A2AClient : IA2AClient
     public IAsyncEnumerable<SseItem<A2AEvent>> SendMessageStreamingAsync(MessageSendParams taskSendParams, CancellationToken cancellationToken = default) =>
         SendRpcSseRequestAsync(
             taskSendParams ?? throw new ArgumentNullException(nameof(taskSendParams)),
-            A2AMethods.MessageStream,
+            A2AMethods.SendStreamingMessage,
             A2AJsonUtilities.JsonContext.Default.MessageSendParams,
             A2AJsonUtilities.JsonContext.Default.A2AEvent,
             cancellationToken);
@@ -89,7 +89,7 @@ public sealed class A2AClient : IA2AClient
     public IAsyncEnumerable<SseItem<A2AEvent>> SubscribeToTaskAsync(string taskId, CancellationToken cancellationToken = default) =>
         SendRpcSseRequestAsync(
             new() { Id = string.IsNullOrEmpty(taskId) ? throw new ArgumentNullException(nameof(taskId)) : taskId },
-            A2AMethods.TaskSubscribe,
+            A2AMethods.SubscribeToTask,
             A2AJsonUtilities.JsonContext.Default.TaskIdParams,
             A2AJsonUtilities.JsonContext.Default.A2AEvent,
             cancellationToken);
