@@ -31,7 +31,7 @@ public class ParsingTests
 
         // Assert
         Assert.NotNull(result);
-        Assert.Equal(((TextPart)taskSendParams.Message.Parts[0]).Text, ((TextPart)result.Message.Parts[0]).Text);
+        Assert.Equal(taskSendParams.Message.Parts[0].Text, result.Message.Parts[0].Text);
     }
 
     [Fact]
@@ -65,7 +65,7 @@ public class ParsingTests
 
         // Assert
         Assert.NotNull(result);
-        Assert.Equal(((TextPart)taskSendParams.Message.Parts[0]).Text, ((TextPart)result.Message.Parts[0]).Text);
+        Assert.Equal(taskSendParams.Message.Parts[0].Text, result.Message.Parts[0].Text);
     }
 
     [Fact]

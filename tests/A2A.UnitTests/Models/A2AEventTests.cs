@@ -17,12 +17,12 @@ namespace A2A.UnitTests.Models
             const string json = """
             {
                 "kind": "message",
-                "role": "user",
+                "role": "ROLE_USER",
                 "messageId": "m-1",
                 "taskId": "t-1",
                 "contextId": "c-1",
                 "referenceTaskIds": [ "r-1", "r-2" ],
-                "parts": [ { "kind": "text", "text": "hi" } ],
+                "parts": [ { "text": "hi" } ],
                 "extensions": [ "foo", "bar" ],
                 "metadata": {
                     "createdAt": "2023-01-01T00:00:00Z"
@@ -44,8 +44,7 @@ namespace A2A.UnitTests.Models
             Assert.Equal("c-1", message.ContextId);
             Assert.Equal(expectedReferenceTaskIds, message.ReferenceTaskIds);
             Assert.Single(message.Parts);
-            Assert.IsType<TextPart>(message.Parts[0]);
-            Assert.Equal(expectedParts[0].Text, (message.Parts[0] as TextPart)!.Text);
+            Assert.Equal(expectedParts[0].Text, message.Parts[0].Text);
             Assert.Equal(expectedExtensions, message.Extensions);
             Assert.NotNull(message.Metadata);
             Assert.Single(message.Metadata);
@@ -61,12 +60,12 @@ namespace A2A.UnitTests.Models
                 "kind": "task",
                 "id": "t-3",
                 "contextId": "c-3",
-                "status": { "state": "submitted" },
+                "status": { "state": "TASK_STATE_SUBMITTED" },
                 "artifacts": [
                     { "artifactId": "f-1", "name": "file1.txt", "description": "A text file", "parts": [] }
                 ],
                 "history": [
-                    { "kind": "message", "role": "user", "messageId": "m-3", "parts": [] }
+                    { "kind": "message", "role": "ROLE_USER", "messageId": "m-3", "parts": [] }
                 ],
                 "metadata": {
                     "createdAt": "2023-01-01T00:00:00Z"
@@ -122,8 +121,7 @@ namespace A2A.UnitTests.Models
                 "kind": "status-update",
                 "taskId": "t-5",
                 "contextId": "c-5",
-                "status": { "state": "working" },
-                "final": false,
+                "status": { "state": "TASK_STATE_WORKING" },
                 "metadata": {
                     "createdAt": "2023-01-01T00:00:00Z"
                 }
@@ -154,7 +152,7 @@ namespace A2A.UnitTests.Models
                 "contextId": "c-7",
                 "artifact": {
                     "artifactId": "a-1",
-                    "parts": [ { "kind": "text", "text": "chunk" } ]
+                    "parts": [ { "text": "chunk" } ]
                 },
                 "append": true,
                 "lastChunk": false,
@@ -178,8 +176,7 @@ namespace A2A.UnitTests.Models
             Assert.Equal("c-7", taskArtifactUpdateEvent.ContextId);
             Assert.Equal(expectedArtifact.ArtifactId, taskArtifactUpdateEvent.Artifact.ArtifactId);
             Assert.Single(taskArtifactUpdateEvent.Artifact.Parts);
-            Assert.IsType<TextPart>(taskArtifactUpdateEvent.Artifact.Parts[0]);
-            Assert.Equal((expectedArtifact.Parts[0] as TextPart)!.Text, (taskArtifactUpdateEvent.Artifact.Parts[0] as TextPart)!.Text);
+            Assert.Equal((expectedArtifact.Parts[0] as TextPart)!.Text, taskArtifactUpdateEvent.Artifact.Parts[0].Text);
             Assert.True(taskArtifactUpdateEvent.Append);
             Assert.False(taskArtifactUpdateEvent.LastChunk);
             Assert.NotNull(taskArtifactUpdateEvent.Metadata);
@@ -204,20 +201,24 @@ namespace A2A.UnitTests.Models
         }
 
         [Fact]
-        public void A2AEvent_Deserialize_MissingKind_Throws()
+        public void A2AEvent_Deserialize_MissingKind_InfersTypeFromProperties()
         {
-            // Arrange
+            // Arrange - v1.0 format without kind discriminator
             const string json = """
             {
-                "role": "user",
+                "role": "ROLE_USER",
                 "messageId": "m-5",
-                "parts": [ { "kind": "text", "text": "hi" } ]
+                "parts": [ { "text": "hi" } ]
             }
             """;
 
-            // Act / Assert
-            var ex = Assert.Throws<A2AException>(() => JsonSerializer.Deserialize<A2AEvent>(json, A2AJsonUtilities.DefaultOptions));
-            Assert.Equal(A2AErrorCode.InvalidRequest, ex.ErrorCode);
+            // Act - should infer AgentMessage from messageId/role properties
+            var result = JsonSerializer.Deserialize<A2AEvent>(json, A2AJsonUtilities.DefaultOptions);
+
+            // Assert
+            Assert.NotNull(result);
+            var message = Assert.IsType<AgentMessage>(result);
+            Assert.Equal("m-5", message.MessageId);
         }
 
         [Fact]
@@ -226,9 +227,9 @@ namespace A2A.UnitTests.Models
             // Arrange
             const string json = """
             {
-                "role": "user",
+                "role": "ROLE_USER",
                 "kind": "message",
-                "parts": [ { "kind": "text", "text": "hi" } ],
+                "parts": [ { "text": "hi" } ],
                 "messageId": "m-7"
             }
             """;
@@ -242,8 +243,7 @@ namespace A2A.UnitTests.Models
             Assert.Equal(MessageRole.User, message.Role);
             Assert.Equal("m-7", message.MessageId);
             Assert.Single(message.Parts);
-            Assert.IsType<TextPart>(message.Parts[0]);
-            Assert.Equal(expectedParts[0].Text, (message.Parts[0] as TextPart)!.Text);
+            Assert.Equal(expectedParts[0].Text, message.Parts[0].Text);
         }
 
         [Fact]
@@ -257,9 +257,9 @@ namespace A2A.UnitTests.Models
                 new TaskArtifactUpdateEvent { TaskId = "t-11", ContextId = "c-11" }
             };
             var serializedA2aEvents = new string[] {
-                "{\"kind\":\"message\",\"role\":\"user\",\"parts\":[{\"kind\":\"text\",\"text\":\"hello\"}],\"messageId\":\"m-7\"}",
-                "{\"kind\":\"task\",\"id\":\"t-9\",\"contextId\":\"c-9\",\"status\":{\"state\":\"submitted\",\"timestamp\":\"2023-01-01T00:00:00+00:00\"},\"history\":[]}",
-                "{\"kind\":\"status-update\",\"status\":{\"state\":\"working\",\"timestamp\":\"2023-01-01T00:00:00+00:00\"},\"final\":false,\"taskId\":\"t-10\",\"contextId\":\"c-10\"}",
+                "{\"kind\":\"message\",\"role\":\"ROLE_USER\",\"parts\":[{\"text\":\"hello\"}],\"messageId\":\"m-7\"}",
+                "{\"kind\":\"task\",\"id\":\"t-9\",\"contextId\":\"c-9\",\"status\":{\"state\":\"TASK_STATE_SUBMITTED\",\"timestamp\":\"2023-01-01T00:00:00+00:00\"},\"history\":[]}",
+                "{\"kind\":\"status-update\",\"status\":{\"state\":\"TASK_STATE_WORKING\",\"timestamp\":\"2023-01-01T00:00:00+00:00\"},\"taskId\":\"t-10\",\"contextId\":\"c-10\"}",
                 "{\"kind\":\"artifact-update\",\"artifact\":{\"artifactId\":\"\",\"parts\":[]},\"taskId\":\"t-11\",\"contextId\":\"c-11\"}"
             };
 

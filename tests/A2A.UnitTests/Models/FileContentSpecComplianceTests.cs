@@ -109,9 +109,9 @@ public class FileContentSpecComplianceTests
     }
 
     [Fact]
-    public void FileContent_Deserialize_WithNeitherBytesNorUri_ShouldThrow()
+    public void FileContent_Deserialize_WithNeitherBytesNorUri_ShouldSucceed()
     {
-        // Arrange: Invalid JSON with neither bytes nor uri
+        // Arrange: JSON with neither bytes nor uri
         const string json = """
         {
             "name": "example.txt",
@@ -119,12 +119,15 @@ public class FileContentSpecComplianceTests
         }
         """;
 
-        // Act & Assert
-        var ex = Assert.Throws<A2AException>(() =>
-            JsonSerializer.Deserialize<FileContent>(json, A2AJsonUtilities.DefaultOptions));
+        // Act: In v1.0, FileContent without bytes/uri is valid (just has null content fields)
+        var fileContent = JsonSerializer.Deserialize<FileContent>(json, A2AJsonUtilities.DefaultOptions);
 
-        Assert.Equal(A2AErrorCode.InvalidRequest, ex.ErrorCode);
-        Assert.Contains("must have either 'bytes' or 'uri'", ex.Message);
+        // Assert
+        Assert.NotNull(fileContent);
+        Assert.Equal("example.txt", fileContent!.Name);
+        Assert.Equal("text/plain", fileContent.MimeType);
+        Assert.Null(fileContent.Bytes);
+        Assert.Null(fileContent.Uri);
     }
 
     [Fact]

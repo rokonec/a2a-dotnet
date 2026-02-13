@@ -19,37 +19,52 @@ internal abstract class BaseKindDiscriminatorConverter<TBase> : JsonConverter<TB
     protected abstract string DisplayName { get; }
 
     /// <summary>
-    /// Reads an instance of <typeparamref name="TBase"/> from JSON using a kind discriminator.
+    /// Attempts to infer the concrete type from JSON properties when the kind discriminator is missing.
     /// </summary>
-    /// <param name="reader">The <see cref="Utf8JsonReader"/> to read from.</param>
-    /// <param name="typeToConvert">The type to convert (ignored).</param>
-    /// <param name="options">Serialization options used to obtain type metadata.</param>
-    /// <returns>The deserialized instance of <typeparamref name="TBase"/>.</returns>
+    /// <param name="root">The root JSON element.</param>
+    /// <returns>The inferred type, or null.</returns>
+    protected virtual Type? InferTypeFromProperties(JsonElement root) => null;
+
+    /// <summary>
+    /// Reads an instance of <typeparamref name="TBase"/> from JSON.
+    /// </summary>
+    /// <param name="reader">The reader.</param>
+    /// <param name="typeToConvert">The type to convert.</param>
+    /// <param name="options">Serialization options.</param>
+    /// <returns>The deserialized instance.</returns>
     public override TBase Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         using var document = JsonDocument.ParseValue(ref reader);
         var root = document.RootElement;
 
-        if (!root.TryGetProperty(DiscriminatorPropertyName, out var kindProp))
-        {
-            throw new A2AException($"Missing required '{DiscriminatorPropertyName}' discriminator for {typeof(TBase).Name}.", A2AErrorCode.InvalidRequest);
-        }
+        Type? targetType = null;
 
-        if (kindProp.ValueKind is not JsonValueKind.String)
+        if (root.TryGetProperty(DiscriminatorPropertyName, out var kindProp))
         {
-            throw new A2AException($"Invalid '{DiscriminatorPropertyName}' discriminator for {typeof(TBase).Name}: '{(kindProp.ValueKind is JsonValueKind.Null ? "null" : kindProp)}'.", A2AErrorCode.InvalidRequest);
-        }
+            if (kindProp.ValueKind is not JsonValueKind.String)
+            {
+                throw new A2AException($"Invalid '{DiscriminatorPropertyName}' discriminator for {typeof(TBase).Name}: '{(kindProp.ValueKind is JsonValueKind.Null ? "null" : kindProp)}'.", A2AErrorCode.InvalidRequest);
+            }
 
-        var kindValue = kindProp.GetString();
-        if (string.IsNullOrEmpty(kindValue))
-        {
-            throw new A2AException($"Missing '{DiscriminatorPropertyName}' discriminator value for {typeof(TBase).Name}.", A2AErrorCode.InvalidRequest);
-        }
+            var kindValue = kindProp.GetString();
+            if (string.IsNullOrEmpty(kindValue))
+            {
+                throw new A2AException($"Missing '{DiscriminatorPropertyName}' discriminator value for {typeof(TBase).Name}.", A2AErrorCode.InvalidRequest);
+            }
 
-        var kindToTypeMapping = KindToTypeMapping;
-        if (!kindToTypeMapping.TryGetValue(kindValue!, out var targetType))
+            if (!KindToTypeMapping.TryGetValue(kindValue!, out targetType))
+            {
+                throw new A2AException($"Unknown {DisplayName} kind: '{kindValue}'", A2AErrorCode.InvalidRequest);
+            }
+        }
+        else
         {
-            throw new A2AException($"Unknown {DisplayName} kind: '{kindValue}'", A2AErrorCode.InvalidRequest);
+            // v1.0: infer type from properties when kind is missing
+            targetType = InferTypeFromProperties(root);
+            if (targetType is null)
+            {
+                throw new A2AException($"Missing required '{DiscriminatorPropertyName}' discriminator for {typeof(TBase).Name} and unable to infer type from properties.", A2AErrorCode.InvalidRequest);
+            }
         }
 
         TBase? obj = null;
@@ -66,7 +81,7 @@ internal abstract class BaseKindDiscriminatorConverter<TBase> : JsonConverter<TB
 
         if (deserializationException is not null || obj is null)
         {
-            throw new A2AException($"Failed to deserialize '{kindValue}' {DisplayName}", deserializationException, A2AErrorCode.InvalidRequest);
+            throw new A2AException($"Failed to deserialize '{targetType.Name}' {DisplayName}", deserializationException, A2AErrorCode.InvalidRequest);
         }
 
         return obj;

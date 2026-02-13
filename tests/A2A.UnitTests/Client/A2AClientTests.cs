@@ -44,14 +44,14 @@ public class A2AClientTests
         Assert.NotNull(capturedRequest);
 
         var requestJson = JsonDocument.Parse(await capturedRequest.Content!.ReadAsStringAsync());
-        Assert.Equal("message/send", requestJson.RootElement.GetProperty("method").GetString());
+        Assert.Equal("SendMessage", requestJson.RootElement.GetProperty("method").GetString());
         Assert.True(Guid.TryParse(requestJson.RootElement.GetProperty("id").GetString(), out _));
 
         var parameters = requestJson.RootElement.GetProperty("params").Deserialize<MessageSendParams>();
         Assert.NotNull(parameters);
 
         Assert.Equal(sendParams.Message.Parts.Count, parameters.Message.Parts.Count);
-        Assert.Equal(((TextPart)sendParams.Message.Parts[0]).Text, ((TextPart)parameters.Message.Parts[0]).Text);
+        Assert.Equal(sendParams.Message.Parts[0].Text, parameters.Message.Parts[0].Text);
         Assert.Equal(sendParams.Message.Role, parameters.Message.Role);
         Assert.Equal(sendParams.Message.MessageId, parameters.Message.MessageId);
         Assert.Equal(sendParams.Message.TaskId, parameters.Message.TaskId);
@@ -126,7 +126,7 @@ public class A2AClientTests
         Assert.NotNull(capturedRequest);
 
         var requestJson = JsonDocument.Parse(await capturedRequest.Content!.ReadAsStringAsync());
-        Assert.Equal("tasks/get", requestJson.RootElement.GetProperty("method").GetString());
+        Assert.Equal("GetTask", requestJson.RootElement.GetProperty("method").GetString());
         Assert.True(Guid.TryParse(requestJson.RootElement.GetProperty("id").GetString(), out _));
 
         var parameters = requestJson.RootElement.GetProperty("params").Deserialize<TaskIdParams>();
@@ -159,7 +159,7 @@ public class A2AClientTests
         Assert.Equal(expectedTask.ContextId, result.ContextId);
         Assert.Equal(expectedTask.Status.State, result.Status.State);
         Assert.Equal(expectedTask.Artifacts![0].ArtifactId, result.Artifacts![0].ArtifactId);
-        Assert.Equal(((TextPart)expectedTask.Artifacts![0].Parts[0]).Text, ((TextPart)result.Artifacts![0].Parts[0]).Text);
+        Assert.Equal(expectedTask.Artifacts![0].Parts[0].Text, result.Artifacts![0].Parts[0].Text);
         Assert.Equal(expectedTask.History![0].MessageId, result.History![0].MessageId);
         Assert.Equal(expectedTask.Metadata!["foo"].GetString(), result.Metadata!["foo"].GetString());
     }
@@ -185,7 +185,7 @@ public class A2AClientTests
         Assert.NotNull(capturedRequest);
 
         var requestJson = JsonDocument.Parse(await capturedRequest.Content!.ReadAsStringAsync());
-        Assert.Equal("tasks/cancel", requestJson.RootElement.GetProperty("method").GetString());
+        Assert.Equal("CancelTask", requestJson.RootElement.GetProperty("method").GetString());
         Assert.True(Guid.TryParse(requestJson.RootElement.GetProperty("id").GetString(), out _));
 
         var parameters = requestJson.RootElement.GetProperty("params").Deserialize<TaskIdParams>();
@@ -221,7 +221,7 @@ public class A2AClientTests
         Assert.Equal(expectedTask.ContextId, result.ContextId);
         Assert.Equal(expectedTask.Status.State, result.Status.State);
         Assert.Equal(expectedTask.Artifacts![0].ArtifactId, result.Artifacts![0].ArtifactId);
-        Assert.Equal(((TextPart)expectedTask.Artifacts![0].Parts[0]).Text, ((TextPart)result.Artifacts![0].Parts[0]).Text);
+        Assert.Equal(expectedTask.Artifacts![0].Parts[0].Text, result.Artifacts![0].Parts[0].Text);
         Assert.Equal(expectedTask.History![0].MessageId, result.History![0].MessageId);
         Assert.Equal(expectedTask.Metadata!["foo"].GetString(), result.Metadata!["foo"].GetString());
     }
@@ -256,7 +256,7 @@ public class A2AClientTests
         Assert.NotNull(capturedRequest);
 
         var requestJson = JsonDocument.Parse(await capturedRequest.Content!.ReadAsStringAsync());
-        Assert.Equal("tasks/pushNotificationConfig/set", requestJson.RootElement.GetProperty("method").GetString());
+        Assert.Equal("CreateTaskPushNotificationConfig", requestJson.RootElement.GetProperty("method").GetString());
         Assert.True(Guid.TryParse(requestJson.RootElement.GetProperty("id").GetString(), out _));
 
         var parameters = requestJson.RootElement.GetProperty("params").Deserialize<TaskPushNotificationConfig>();
@@ -324,7 +324,7 @@ public class A2AClientTests
         Assert.NotNull(capturedRequest);
 
         var requestJson = JsonDocument.Parse(await capturedRequest.Content!.ReadAsStringAsync());
-        Assert.Equal("tasks/pushNotificationConfig/get", requestJson.RootElement.GetProperty("method").GetString());
+        Assert.Equal("GetTaskPushNotificationConfig", requestJson.RootElement.GetProperty("method").GetString());
         Assert.True(Guid.TryParse(requestJson.RootElement.GetProperty("id").GetString(), out _));
 
         var parameters = requestJson.RootElement.GetProperty("params").Deserialize<GetTaskPushNotificationConfigParams>();
@@ -437,13 +437,13 @@ public class A2AClientTests
         Assert.NotNull(capturedRequest);
 
         var requestJson = JsonDocument.Parse(await capturedRequest.Content!.ReadAsStringAsync());
-        Assert.Equal("message/stream", requestJson.RootElement.GetProperty("method").GetString());
+        Assert.Equal("SendStreamingMessage", requestJson.RootElement.GetProperty("method").GetString());
         Assert.True(Guid.TryParse(requestJson.RootElement.GetProperty("id").GetString(), out _));
 
         var parameters = requestJson.RootElement.GetProperty("params").Deserialize<MessageSendParams>();
         Assert.NotNull(parameters);
         Assert.Equal(sendParams.Message.Parts.Count, parameters.Message.Parts.Count);
-        Assert.Equal(((TextPart)sendParams.Message.Parts[0]).Text, ((TextPart)parameters.Message.Parts[0]).Text);
+        Assert.Equal(sendParams.Message.Parts[0].Text, parameters.Message.Parts[0].Text);
         Assert.Equal(sendParams.Message.Role, parameters.Message.Role);
         Assert.Equal(sendParams.Message.MessageId, parameters.Message.MessageId);
         Assert.Equal(sendParams.Message.TaskId, parameters.Message.TaskId);
@@ -525,7 +525,7 @@ public class A2AClientTests
         Assert.NotNull(capturedRequest);
 
         var requestJson = JsonDocument.Parse(await capturedRequest.Content!.ReadAsStringAsync());
-        Assert.Equal("tasks/resubscribe", requestJson.RootElement.GetProperty("method").GetString());
+        Assert.Equal("SubscribeToTask", requestJson.RootElement.GetProperty("method").GetString());
         Assert.True(Guid.TryParse(requestJson.RootElement.GetProperty("id").GetString(), out _));
 
         var parameters = requestJson.RootElement.GetProperty("params").Deserialize<TaskIdParams>();

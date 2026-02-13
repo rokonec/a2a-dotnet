@@ -67,8 +67,9 @@ namespace A2A.UnitTests.Models
             Assert.Equal(msp.Message.MessageId, deserialized.Message.MessageId);
             Assert.NotNull(deserialized.Message.Parts);
             Assert.Single(deserialized.Message.Parts);
-            var part = Assert.IsType<TextPart>(deserialized?.Message.Parts[0]);
-            Assert.Equal("hello", part.Text);
+            var part = deserialized?.Message.Parts[0];
+            Assert.NotNull(part);
+            Assert.Equal("hello", part!.Text);
         }
 
         [Fact]

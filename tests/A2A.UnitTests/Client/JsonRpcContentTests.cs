@@ -60,7 +60,7 @@ namespace A2A.UnitTests.Client
             var result = doc.RootElement.GetProperty("result");
             Assert.Equal("task-1", result.GetProperty("id").GetString());
             Assert.Equal("ctx-1", result.GetProperty("contextId").GetString());
-            Assert.Equal("completed", result.GetProperty("status").GetProperty("state").GetString());
+            Assert.Equal("TASK_STATE_COMPLETED", result.GetProperty("status").GetProperty("state").GetString());
         }
 
         [Fact]

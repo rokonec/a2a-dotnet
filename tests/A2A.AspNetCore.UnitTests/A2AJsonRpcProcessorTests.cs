@@ -22,11 +22,9 @@ public class A2AJsonRpcProcessorTests
             "method": "{{A2AMethods.SendMessage}}",
             "id": {{idValue}},
             "params": {
-                "message": {
-                    "kind" : "message",
-                    "messageId": "test-message-id",
-                    "role": "user",
-                    "parts": [{ "kind":"text","text":"hi" }]
+                "message": {"messageId": "test-message-id",
+                    "role": "ROLE_USER",
+                    "parts": [{ "text":"hi" }]
                 }
             }
         }
@@ -67,10 +65,8 @@ public class A2AJsonRpcProcessorTests
             "method": "{{A2AMethods.SendMessage}}",
             "id": "some",
             "params": {
-                "message": {
-                    "kind": "message",
-                    "messageId": "test-message-id",
-                    "role": "user",
+                "message": {"messageId": "test-message-id",
+                    "role": "ROLE_USER",
                     "parts": []
                 }
             }
@@ -92,7 +88,7 @@ public class A2AJsonRpcProcessorTests
     }
 
     [Theory]
-    [InlineData("\"method\": \"message/send\",", null)]     // Valid method - should succeed
+    [InlineData("\"method\": \"SendMessage\",", null)]     // Valid method - should succeed
     [InlineData("\"method\": \"invalid/method\",", -32601)] // Invalid method - should return method not found error
     [InlineData("\"method\": \"\",", -32600)]               // Empty method - should return invalid request error
     [InlineData("", -32600)]                                // Missing method field - should return invalid request error
@@ -109,11 +105,9 @@ public class A2AJsonRpcProcessorTests
             {{methodPropertySnippet}}
             "id": "test-id",
             "params": {
-                "message": {
-                    "kind" : "message",
-                    "messageId": "test-message-id",
-                    "role": "user",
-                    "parts": [{ "kind":"text","text":"hi" }]
+                "message": {"messageId": "test-message-id",
+                    "role": "ROLE_USER",
+                    "parts": [{ "text":"hi" }]
                 }
             }
         }
@@ -145,7 +139,7 @@ public class A2AJsonRpcProcessorTests
     }
 
     [Theory]
-    [InlineData("{\"message\":{\"kind\":\"message\", \"messageId\":\"test\", \"role\": \"user\", \"parts\": [{\"kind\":\"text\",\"text\":\"hi\"}]}}", null)]  // Valid object params - should succeed
+    [InlineData("{\"message\":{\"messageId\":\"test\", \"role\": \"ROLE_USER\", \"parts\": [{\"text\":\"hi\"}]}}", null)]  // Valid object params - should succeed
     [InlineData("[]", -32602)]                                                                      // Array params - should return invalid params error
     [InlineData("\"string-params\"", -32602)]                                                       // String params - should return invalid params error
     [InlineData("42", -32602)]                                                                      // Number params - should return invalid params error
@@ -194,7 +188,7 @@ public class A2AJsonRpcProcessorTests
     [Theory]
     [InlineData("{\"invalidField\": \"not_message\"}", "Invalid parameters for MessageSendParams")]  // Wrong field structure
     [InlineData("{\"message\": \"not_object\"}", "Invalid parameters for MessageSendParams")]        // Wrong field type
-    [InlineData("{\"message\": {\"kind\": \"invalid\"}}", "Invalid parameters for MessageSendParams")] // Invalid discriminator
+    [InlineData("{\"message\": {\"role\": \"invalid\"}}", "Invalid parameters for MessageSendParams")] // Invalid role
     [InlineData("{\"\":\"not_a_dict\"}", "Invalid parameters for MessageSendParams")] // Invalid discriminator
     public async Task ValidateParamsContent_HandlesInvalidParamsStructure(string paramsValue, string expectedErrorPrefix)
     {
@@ -262,7 +256,7 @@ public class A2AJsonRpcProcessorTests
         Assert.Equal(TaskState.Submitted, agentTask.Status.State);
         Assert.NotEmpty(agentTask.History);
         Assert.Equal(MessageRole.User, agentTask.History[0].Role);
-        Assert.Equal("hi", ((TextPart)agentTask.History[0].Parts[0]).Text);
+        Assert.Equal("hi", agentTask.History[0].Parts[0].Text);
         Assert.Equal("test-message-id", agentTask.History[0].MessageId);
     }
 

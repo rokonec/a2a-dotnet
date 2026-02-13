@@ -16,12 +16,12 @@ public class A2AResponseTests
         const string json = """
         {
             "kind": "message",
-            "role": "user",
+            "role": "ROLE_USER",
             "messageId": "m-2",
             "taskId": "t-2",
             "contextId": "c-2",
             "referenceTaskIds": [ "r-3", "r-4" ],
-            "parts": [ { "kind": "text", "text": "hi" } ],
+            "parts": [ { "text": "hi" } ],
             "extensions": [ "foo", "bar" ],
             "metadata": {
                 "createdAt": "2023-01-01T00:00:00Z"
@@ -43,8 +43,7 @@ public class A2AResponseTests
         Assert.Equal("c-2", message.ContextId);
         Assert.Equal(expectedReferenceTaskIds, message.ReferenceTaskIds);
         Assert.Single(message.Parts);
-        Assert.IsType<TextPart>(message.Parts[0]);
-        Assert.Equal(expectedParts[0].Text, (message.Parts[0] as TextPart)!.Text);
+        Assert.Equal(expectedParts[0].Text, message.Parts[0].Text);
         Assert.Equal(expectedExtensions, message.Extensions);
         Assert.NotNull(message.Metadata);
         Assert.Single(message.Metadata);
@@ -60,12 +59,12 @@ public class A2AResponseTests
             "kind": "task",
             "id": "t-4",
             "contextId": "c-4",
-            "status": { "state": "submitted" },
+            "status": { "state": "TASK_STATE_SUBMITTED" },
             "artifacts": [
                 { "artifactId": "f-2", "name": "file2.txt", "description": "A text file", "parts": [] }
             ],
             "history": [
-                { "kind": "message", "role": "user", "messageId": "m-4", "parts": [ { "kind": "text", "text": "go" } ] }
+                { "kind": "message", "role": "ROLE_USER", "messageId": "m-4", "parts": [ { "text": "go" } ] }
             ],
             "metadata": {
                 "createdAt": "2023-01-01T00:00:00Z"
@@ -121,8 +120,7 @@ public class A2AResponseTests
             "kind": "status-update",
             "taskId": "t-6",
             "contextId": "c-6",
-            "status": { "state": "working" },
-            "final": false,
+            "status": { "state": "TASK_STATE_WORKING" },
             "metadata": {
                 "createdAt": "2023-01-01T00:00:00Z"
             }
@@ -145,7 +143,7 @@ public class A2AResponseTests
             "contextId": "c-8",
             "artifact": {
                 "artifactId": "a-2",
-                "parts": [ { "kind": "text", "text": "chunk" } ]
+                "parts": [ { "text": "chunk" } ]
             },
             "append": true,
             "lastChunk": false,
@@ -177,20 +175,24 @@ public class A2AResponseTests
     }
 
     [Fact]
-    public void A2AResponse_Deserialize_MissingKind_Throws()
+    public void A2AResponse_Deserialize_MissingKind_InfersTypeFromProperties()
     {
-        // Arrange
+        // Arrange - v1.0 format without kind discriminator
         const string json = """
         {
-            "role": "user",
+            "role": "ROLE_USER",
             "messageId": "m-6",
-            "parts": [ { "kind": "text", "text": "hi" } ]
+            "parts": [ { "text": "hi" } ]
         }
         """;
 
-        // Act / Assert
-        var ex = Assert.Throws<A2AException>(() => JsonSerializer.Deserialize<A2AResponse>(json, A2AJsonUtilities.DefaultOptions));
-        Assert.Equal(A2AErrorCode.InvalidRequest, ex.ErrorCode);
+        // Act - should infer AgentMessage from messageId/role properties
+        var result = JsonSerializer.Deserialize<A2AResponse>(json, A2AJsonUtilities.DefaultOptions);
+
+        // Assert
+        Assert.NotNull(result);
+        var message = Assert.IsType<AgentMessage>(result);
+        Assert.Equal("m-6", message.MessageId);
     }
 
     [Fact]
@@ -199,9 +201,9 @@ public class A2AResponseTests
         // Arrange
         const string json = """
         {
-            "role": "user",
+            "role": "ROLE_USER",
             "kind": "message",
-            "parts": [ { "kind": "text", "text": "hi" } ],
+            "parts": [ { "text": "hi" } ],
             "messageId": "m-7"
         }
         """;
@@ -215,8 +217,7 @@ public class A2AResponseTests
         Assert.Equal(MessageRole.User, message.Role);
         Assert.Equal("m-7", message.MessageId);
         Assert.Single(message.Parts);
-        Assert.IsType<TextPart>(message.Parts[0]);
-        Assert.Equal(expectedParts[0].Text, (message.Parts[0] as TextPart)!.Text);
+        Assert.Equal(expectedParts[0].Text, message.Parts[0].Text);
     }
 
     [Fact]
@@ -228,8 +229,8 @@ public class A2AResponseTests
             new AgentTask { Id = "t-12", ContextId = "c-12", Status = new AgentTaskStatus { State = TaskState.Submitted, Timestamp = DateTimeOffset.Parse("2023-01-01T00:00:00+00:00", null) } }
         };
         var serializedA2aResponses = new string[] {
-            "{\"kind\":\"message\",\"role\":\"user\",\"parts\":[{\"kind\":\"text\",\"text\":\"hello\"}],\"messageId\":\"m-8\"}",
-            "{\"kind\":\"task\",\"id\":\"t-12\",\"contextId\":\"c-12\",\"status\":{\"state\":\"submitted\",\"timestamp\":\"2023-01-01T00:00:00+00:00\"},\"history\":[]}"
+            "{\"kind\":\"message\",\"role\":\"ROLE_USER\",\"parts\":[{\"text\":\"hello\"}],\"messageId\":\"m-8\"}",
+            "{\"kind\":\"task\",\"id\":\"t-12\",\"contextId\":\"c-12\",\"status\":{\"state\":\"TASK_STATE_SUBMITTED\",\"timestamp\":\"2023-01-01T00:00:00+00:00\"},\"history\":[]}"
         };
 
         for (var i = 0; i < a2aResponses.Length; i++)

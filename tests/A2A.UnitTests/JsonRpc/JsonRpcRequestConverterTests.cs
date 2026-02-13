@@ -23,11 +23,11 @@ public class JsonRpcRequestConverterTests
         {
             "jsonrpc": "2.0",
             "id": "test-id",
-            "method": "message/send",
+            "method": "SendMessage",
             "params": {
                 "message": {
                     "messageId": "msg-1",
-                    "role": "user",
+                    "role": "ROLE_USER",
                     "parts": []
                 }
             }
@@ -42,7 +42,7 @@ public class JsonRpcRequestConverterTests
         Assert.Equal("2.0", result.JsonRpc);
         Assert.True(result.Id.IsString);
         Assert.Equal("test-id", result.Id.AsString());
-        Assert.Equal("message/send", result.Method);
+        Assert.Equal("SendMessage", result.Method);
         Assert.True(result.Params.HasValue);
         Assert.True(result.Params.Value.TryGetProperty("message", out _));
     }
@@ -55,7 +55,7 @@ public class JsonRpcRequestConverterTests
         {
             "jsonrpc": "2.0",
             "id": "test-id",
-            "method": "tasks/get"
+            "method": "GetTask"
         }
         """;
 
@@ -67,7 +67,7 @@ public class JsonRpcRequestConverterTests
         Assert.Equal("2.0", result.JsonRpc);
         Assert.True(result.Id.IsString);
         Assert.Equal("test-id", result.Id.AsString());
-        Assert.Equal("tasks/get", result.Method);
+        Assert.Equal("GetTask", result.Method);
         Assert.False(result.Params.HasValue);
     }
 
@@ -78,7 +78,7 @@ public class JsonRpcRequestConverterTests
         var json = """
         {
             "jsonrpc": "2.0",
-            "method": "message/send",
+            "method": "SendMessage",
             "params": {}
         }
         """;
@@ -90,7 +90,7 @@ public class JsonRpcRequestConverterTests
         Assert.NotNull(result);
         Assert.Equal("2.0", result.JsonRpc);
         Assert.False(result.Id.HasValue);
-        Assert.Equal("message/send", result.Method);
+        Assert.Equal("SendMessage", result.Method);
         Assert.True(result.Params.HasValue);
     }
 
@@ -105,7 +105,7 @@ public class JsonRpcRequestConverterTests
         {
             "jsonrpc": "2.0",
             "id": {{idJson}},
-            "method": "tasks/get"
+            "method": "GetTask"
         }
         """;
 
@@ -132,13 +132,13 @@ public class JsonRpcRequestConverterTests
     }
 
     [Theory]
-    [InlineData("message/send")]
-    [InlineData("message/stream")]
-    [InlineData("tasks/get")]
-    [InlineData("tasks/cancel")]
-    [InlineData("tasks/resubscribe")]
-    [InlineData("tasks/pushNotificationConfig/set")]
-    [InlineData("tasks/pushNotificationConfig/get")]
+    [InlineData("SendMessage")]
+    [InlineData("SendStreamingMessage")]
+    [InlineData("GetTask")]
+    [InlineData("CancelTask")]
+    [InlineData("SubscribeToTask")]
+    [InlineData("CreateTaskPushNotificationConfig")]
+    [InlineData("GetTaskPushNotificationConfig")]
     public void Read_ValidMethods_ReturnsCorrectMethod(string method)
     {
         // Arrange
@@ -169,7 +169,7 @@ public class JsonRpcRequestConverterTests
         var json = """
         {
             "id": "test-id",
-            "method": "tasks/get"
+            "method": "GetTask"
         }
         """;
 
@@ -193,7 +193,7 @@ public class JsonRpcRequestConverterTests
         {
             "jsonrpc": {{versionJson}},
             "id": "test-id",
-            "method": "tasks/get"
+            "method": "GetTask"
         }
         """;
 
@@ -280,7 +280,7 @@ public class JsonRpcRequestConverterTests
         {
             "jsonrpc": "2.0",
             "id": {{idJson}},
-            "method": "tasks/get"
+            "method": "GetTask"
         }
         """;
 
@@ -304,7 +304,7 @@ public class JsonRpcRequestConverterTests
         {
             "jsonrpc": "2.0",
             "id": "test-id",
-            "method": "tasks/get",
+            "method": "GetTask",
             "params": {{paramsJson}}
         }
         """;
@@ -329,7 +329,7 @@ public class JsonRpcRequestConverterTests
         {
             "jsonrpc": "1.0",
             "id": "error-test-id",
-            "method": "tasks/get"
+            "method": "GetTask"
         }
         """;
 
@@ -347,7 +347,7 @@ public class JsonRpcRequestConverterTests
         var json = """
         {
             "jsonrpc": "1.0",
-            "method": "tasks/get"
+            "method": "GetTask"
         }
         """;
 
@@ -371,7 +371,7 @@ public class JsonRpcRequestConverterTests
         {
             JsonRpc = "2.0",
             Id = "test-id",
-            Method = "message/send",
+            Method = "SendMessage",
             Params = paramsDoc.RootElement
         };
 
@@ -384,7 +384,7 @@ public class JsonRpcRequestConverterTests
 
         Assert.Equal("2.0", root.GetProperty("jsonrpc").GetString());
         Assert.Equal("test-id", root.GetProperty("id").GetString());
-        Assert.Equal("message/send", root.GetProperty("method").GetString());
+        Assert.Equal("SendMessage", root.GetProperty("method").GetString());
         Assert.Equal("value", root.GetProperty("params").GetProperty("key").GetString());
     }
 
@@ -396,7 +396,7 @@ public class JsonRpcRequestConverterTests
         {
             JsonRpc = "2.0",
             Id = "test-id",
-            Method = "tasks/get",
+            Method = "GetTask",
             Params = null
         };
 
@@ -409,7 +409,7 @@ public class JsonRpcRequestConverterTests
 
         Assert.Equal("2.0", root.GetProperty("jsonrpc").GetString());
         Assert.Equal("test-id", root.GetProperty("id").GetString());
-        Assert.Equal("tasks/get", root.GetProperty("method").GetString());
+        Assert.Equal("GetTask", root.GetProperty("method").GetString());
         Assert.False(root.TryGetProperty("params", out _));
     }
 
@@ -421,7 +421,7 @@ public class JsonRpcRequestConverterTests
         {
             JsonRpc = "2.0",
             Id = new JsonRpcId((string?)null),
-            Method = "tasks/get",
+            Method = "GetTask",
             Params = null
         };
 
@@ -434,7 +434,7 @@ public class JsonRpcRequestConverterTests
 
         Assert.Equal("2.0", root.GetProperty("jsonrpc").GetString());
         Assert.Equal(JsonValueKind.Null, root.GetProperty("id").ValueKind);
-        Assert.Equal("tasks/get", root.GetProperty("method").GetString());
+        Assert.Equal("GetTask", root.GetProperty("method").GetString());
     }
 
     #endregion
@@ -459,7 +459,7 @@ public class JsonRpcRequestConverterTests
         {
             JsonRpc = "2.0",
             Id = "round-trip-test",
-            Method = "message/send",
+            Method = "SendMessage",
             Params = paramsDoc.RootElement
         };
 
@@ -477,13 +477,13 @@ public class JsonRpcRequestConverterTests
     }
 
     [Theory]
-    [InlineData("message/send")]
-    [InlineData("message/stream")]
-    [InlineData("tasks/get")]
-    [InlineData("tasks/cancel")]
-    [InlineData("tasks/resubscribe")]
-    [InlineData("tasks/pushNotificationConfig/set")]
-    [InlineData("tasks/pushNotificationConfig/get")]
+    [InlineData("SendMessage")]
+    [InlineData("SendStreamingMessage")]
+    [InlineData("GetTask")]
+    [InlineData("CancelTask")]
+    [InlineData("SubscribeToTask")]
+    [InlineData("CreateTaskPushNotificationConfig")]
+    [InlineData("GetTaskPushNotificationConfig")]
     public void RoundTrip_AllValidMethods_PreservesMethod(string method)
     {
         // Arrange
@@ -516,7 +516,7 @@ public class JsonRpcRequestConverterTests
         {
             "jsonrpc": "2.0",
             "id": "test-id",
-            "method": "tasks/get",
+            "method": "GetTask",
             "params": null
         }
         """;
@@ -537,7 +537,7 @@ public class JsonRpcRequestConverterTests
         {
             "jsonrpc": "2.0",
             "id": "test-id",
-            "method": "tasks/get",
+            "method": "GetTask",
             "params": {}
         }
         """;
@@ -563,7 +563,7 @@ public class JsonRpcRequestConverterTests
         {
             "jsonrpc": "2.0",
             "id": 123,
-            "method": "tasks/get"
+            "method": "GetTask"
         }
         """;
 
@@ -602,7 +602,7 @@ public class JsonRpcRequestConverterTests
         {
             "jsonrpc": "2.0",
             "id": "test-string-id",
-            "method": "tasks/get"
+            "method": "GetTask"
         }
         """;
 

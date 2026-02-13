@@ -4,20 +4,22 @@ namespace A2A.UnitTests.Models;
 
 public sealed class BaseKindDiscriminatorConverterEdgeTests
 {
-    // Using Part as it has unknown/count semantics baked in and a short payload
-
     [Fact]
-    public void Part_Deserialize_Kind_Index_OutOfRange_ThrowsUnknownKind()
+    public void Part_Deserialize_Kind_Index_OutOfRange_ReturnsPartWithoutKind()
     {
-        // Arrange: craft an enum value beyond mapping length
-        // PartKind.Count = 4, mapping is length 4 with index 0 null (Unknown), valid indices 1..3
+        // Arrange: In v1.0, Part no longer uses a kind discriminator.
+        // Unknown properties like "kind" are simply ignored.
         const string json = "{ \"kind\": \"count\" }";
 
         // Act
-        var ex = Assert.Throws<A2AException>(() => JsonSerializer.Deserialize<Part>(json, A2AJsonUtilities.DefaultOptions));
+        var part = JsonSerializer.Deserialize<Part>(json, A2AJsonUtilities.DefaultOptions);
 
-        // Assert: should hit the mapping range check and throw Unknown kind
-        Assert.Equal(A2AErrorCode.InvalidRequest, ex.ErrorCode);
+        // Assert: Part is returned with all properties null (kind is ignored)
+        Assert.NotNull(part);
+        Assert.Null(part!.Text);
+        Assert.Null(part.Data);
+        Assert.Null(part.Url);
+        Assert.Null(part.Raw);
     }
 
     [Fact]

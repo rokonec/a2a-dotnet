@@ -111,8 +111,9 @@ namespace A2A.UnitTests.Models
             Assert.Equal(MessageRole.Agent, msg.Role);
             Assert.False(string.IsNullOrWhiteSpace(msg.MessageId));
             Assert.Equal(2, msg.Parts.Count);
-            Assert.IsType<TextPart>(msg.Parts[0]);
-            Assert.IsType<FilePart>(msg.Parts[1]);
+            Assert.NotNull(msg.Parts[0].Text);
+            Assert.Equal("hello", msg.Parts[0].Text);
+            Assert.NotNull(msg.Parts[1].Url);
         }
 
         [Fact]
@@ -197,8 +198,8 @@ namespace A2A.UnitTests.Models
         {
             var content = new TextContent("hello");
             var part = content.ToPart();
-            var tp = Assert.IsType<TextPart>(part);
-            Assert.Equal("hello", tp.Text);
+            Assert.NotNull(part);
+            Assert.Equal("hello", part!.Text);
         }
 
         [Fact]
