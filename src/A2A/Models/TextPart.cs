@@ -1,16 +1,24 @@
-using System.Text.Json.Serialization;
-
 namespace A2A;
 
 /// <summary>
-/// Represents a text segment within parts.
+/// Compatibility helper for creating text parts.
+/// In v1.0, use <see cref="Part.FromText"/> or set <see cref="Part.Text"/> directly.
 /// </summary>
-public sealed class TextPart() : Part(PartKind.Text)
+public sealed class TextPart : Part
 {
     /// <summary>
-    /// Gets or sets the text content.
+    /// Initializes a new text part.
     /// </summary>
-    [JsonPropertyName("text")]
-    [JsonRequired]
-    public string Text { get; set; } = string.Empty;
+    public TextPart()
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new text part with the specified text.
+    /// </summary>
+    /// <param name="text">The text content.</param>
+    public TextPart(string text)
+    {
+        Text = text;
+    }
 }

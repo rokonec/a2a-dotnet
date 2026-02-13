@@ -127,7 +127,7 @@ public class ParsingTests
         Assert.NotNull(result);
         Assert.Equal(taskArtifactUpdateEvent.TaskId, result.TaskId);
         Assert.Equal(taskArtifactUpdateEvent.ContextId, result.ContextId);
-        Assert.Equal(taskArtifactUpdateEvent.Artifact.Parts[0].AsTextPart().Text, result.Artifact.Parts[0].AsTextPart().Text);
+        Assert.Equal(taskArtifactUpdateEvent.Artifact.Parts[0].Text, result.Artifact.Parts[0].Text);
     }
 
     [Fact]
@@ -164,6 +164,6 @@ public class ParsingTests
         Assert.NotNull(resultTaskArtifactUpdateEvent);
         Assert.Equal(taskArtifactUpdateEvent.TaskId, resultTaskArtifactUpdateEvent.TaskId);
         Assert.Equal(taskArtifactUpdateEvent.ContextId, resultTaskArtifactUpdateEvent.ContextId);
-        Assert.Equal(taskArtifactUpdateEvent.Artifact.Parts[0].AsTextPart().Text, resultTaskArtifactUpdateEvent.Artifact.Parts[0].AsTextPart().Text);
+        Assert.Equal(taskArtifactUpdateEvent.Artifact.Parts[0].Text, resultTaskArtifactUpdateEvent.Artifact.Parts[0].Text);
     }
 }

@@ -10,7 +10,7 @@ public class TaskManagerTests
         string messageReceived = string.Empty;
         taskManager.OnMessageReceived = (messageSendParams, _) =>
         {
-            messageReceived = messageSendParams.Message.Parts.OfType<TextPart>().First().Text;
+            messageReceived = messageSendParams.Message.Parts.OfType<TextPart>().First().Text!;
             return Task.FromResult<A2AResponse>(CreateMessage("Goodbye, World!"));
         };
         var a2aResponse = await taskManager.SendMessageAsync(taskSendParams) as AgentMessage;
@@ -30,7 +30,7 @@ public class TaskManagerTests
         string messageReceived = string.Empty;
         taskManager.OnMessageReceived = async (messageSendParams, cancellationToken) =>
         {
-            messageReceived = messageSendParams.Message.Parts.OfType<TextPart>().First().Text;
+            messageReceived = messageSendParams.Message.Parts.OfType<TextPart>().First().Text!;
 
             return messageReceived switch
             {
@@ -385,11 +385,11 @@ public class TaskManagerTests
         Assert.Equal(3, events.Count);
 
         var init = Assert.IsType<AgentTask>(events[0]);
-        Assert.Equal("init", init!.History![0].Parts[0].AsTextPart().Text);
+        Assert.Equal("init", init!.History![0].Parts[0].Text);
         var t = Assert.IsType<TaskStatusUpdateEvent>(events[1]);
-        Assert.Equal("second", t!.Status.Message!.Parts[0].AsTextPart().Text);
+        Assert.Equal("second", t!.Status.Message!.Parts[0].Text);
         t = Assert.IsType<TaskStatusUpdateEvent>(events[2]);
-        Assert.Equal("done", t!.Status.Message!.Parts[0].AsTextPart().Text);
+        Assert.Equal("done", t!.Status.Message!.Parts[0].Text);
     }
 
     [Fact]

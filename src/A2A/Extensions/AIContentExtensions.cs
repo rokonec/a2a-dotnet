@@ -79,28 +79,25 @@ public static class AIContentExtensions
         AIContent? content = null;
         switch (part)
         {
-            case TextPart textPart:
-                content = new TextContent(textPart.Text);
+            case { Text: { } text }:
+                content = new TextContent(text);
                 break;
 
-            case FilePart { File: { } file }:
-                if (file.Uri is not null)
-                {
-                    content = new UriContent(file.Uri, file.MimeType ?? "application/octet-stream");
-                }
-                else if (file.Bytes is not null)
-                {
-                    content = new DataContent(Convert.FromBase64String(file.Bytes), file.MimeType ?? "application/octet-stream")
-                    {
-                        Name = file.Name,
-                    };
-                }
+            case { Url: { } url }:
+                content = new UriContent(new Uri(url), part.MediaType ?? "application/octet-stream");
                 break;
 
-            case DataPart dataPart:
+            case { Raw: { } raw }:
+                content = new DataContent(Convert.FromBase64String(raw), part.MediaType ?? "application/octet-stream")
+                {
+                    Name = part.Filename,
+                };
+                break;
+
+            case { Data: { } data }:
                 content = new DataContent(
-                    JsonSerializer.SerializeToUtf8Bytes(dataPart.Data, A2AJsonUtilities.DefaultOptions.GetTypeInfo(typeof(Dictionary<string, JsonElement>))),
-                    "application/json");
+                    JsonSerializer.SerializeToUtf8Bytes(data, A2AJsonUtilities.DefaultOptions.GetTypeInfo(typeof(JsonElement))),
+                    part.MediaType ?? "application/json");
                 break;
         }
 
@@ -136,21 +133,15 @@ public static class AIContentExtensions
         switch (content)
         {
             case TextContent textContent:
-                part = new TextPart { Text = textContent.Text };
+                part = Part.FromText(textContent.Text);
                 break;
 
             case UriContent uriContent:
-                part = new FilePart
-                {
-                    File = new FileContent(uriContent.Uri) { MimeType = uriContent.MediaType },
-                };
+                part = Part.FromUrl(uriContent.Uri.ToString(), uriContent.MediaType);
                 break;
 
             case DataContent dataContent:
-                part = new FilePart
-                {
-                    File = new FileContent(dataContent.Base64Data.ToString()) { MimeType = dataContent.MediaType },
-                };
+                part = Part.FromRaw(dataContent.Base64Data.ToString(), dataContent.MediaType);
                 break;
         }
 

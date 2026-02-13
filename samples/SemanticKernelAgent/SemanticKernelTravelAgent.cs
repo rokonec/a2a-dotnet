@@ -153,7 +153,7 @@ public class SemanticKernelTravelAgent : IDisposable
         await _taskManager.UpdateStatusAsync(task.Id, TaskState.Working, cancellationToken: cancellationToken);
 
         // Get message from the user
-        var userMessage = task.History!.Last().Parts.First().AsTextPart().Text;
+        var userMessage = task.History!.Last().Parts.First().Text!;
 
         // Get the response from the agent
         var artifact = new Artifact();

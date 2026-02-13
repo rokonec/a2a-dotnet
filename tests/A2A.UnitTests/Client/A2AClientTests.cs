@@ -78,7 +78,7 @@ public class A2AClientTests
             Parts =
             [
                 new TextPart { Text = "Test text" },
-                new DataPart { Data = new Dictionary<string, JsonElement> { { "key", JsonDocument.Parse("\"value\"").RootElement } } },
+                new DataPart { Data = JsonSerializer.SerializeToElement(new Dictionary<string, JsonElement> { { "key", JsonDocument.Parse("\"value\"").RootElement } }) },
             ],
             Metadata = new Dictionary<string, JsonElement> { { "metaKey", JsonDocument.Parse("\"metaValue\"").RootElement } },
             ReferenceTaskIds = ["ref1", "ref2"],
@@ -98,10 +98,10 @@ public class A2AClientTests
         Assert.NotNull(result);
         Assert.Equal(expectedMessage.Role, result.Role);
         Assert.Equal(expectedMessage.Parts.Count, result.Parts.Count);
-        Assert.IsType<TextPart>(result.Parts[0]);
-        Assert.Equal(((TextPart)expectedMessage.Parts[0]).Text, ((TextPart)result.Parts[0]).Text);
-        Assert.IsType<DataPart>(result.Parts[1]);
-        Assert.Equal(((DataPart)expectedMessage.Parts[1]).Data["key"].GetString(), ((DataPart)result.Parts[1]).Data["key"].GetString());
+        Assert.NotNull(result.Parts[0].Text);
+        Assert.Equal(expectedMessage.Parts[0].Text, result.Parts[0].Text);
+        Assert.NotNull(result.Parts[1].Data);
+        Assert.Equal(expectedMessage.Parts[1].Data!.Value.GetProperty("key").GetString(), result.Parts[1].Data!.Value.GetProperty("key").GetString());
         Assert.Equal(expectedMessage.Metadata["metaKey"].GetString(), result.Metadata!["metaKey"].GetString());
         Assert.Equal(expectedMessage.ReferenceTaskIds, result.ReferenceTaskIds);
         Assert.Equal(expectedMessage.MessageId, result.MessageId);
@@ -468,7 +468,7 @@ public class A2AClientTests
             Parts =
             [
                 new TextPart { Text = "Test text" },
-                new DataPart { Data = new Dictionary<string, JsonElement> { { "key", JsonDocument.Parse("\"value\"").RootElement } } },
+                new DataPart { Data = JsonSerializer.SerializeToElement(new Dictionary<string, JsonElement> { { "key", JsonDocument.Parse("\"value\"").RootElement } }) },
             ],
             Metadata = new Dictionary<string, JsonElement> { { "metaKey", JsonDocument.Parse("\"metaValue\"").RootElement } },
             ReferenceTaskIds = ["ref1", "ref2"],
@@ -494,10 +494,10 @@ public class A2AClientTests
         var message = Assert.IsType<AgentMessage>(result.Value.Data);
         Assert.Equal(expectedMessage.Role, message.Role);
         Assert.Equal(expectedMessage.Parts.Count, message.Parts.Count);
-        Assert.IsType<TextPart>(message.Parts[0]);
-        Assert.Equal(((TextPart)expectedMessage.Parts[0]).Text, ((TextPart)message.Parts[0]).Text);
-        Assert.IsType<DataPart>(message.Parts[1]);
-        Assert.Equal(((DataPart)expectedMessage.Parts[1]).Data["key"].GetString(), ((DataPart)message.Parts[1]).Data["key"].GetString());
+        Assert.NotNull(message.Parts[0].Text);
+        Assert.Equal(expectedMessage.Parts[0].Text, message.Parts[0].Text);
+        Assert.NotNull(message.Parts[1].Data);
+        Assert.Equal(expectedMessage.Parts[1].Data!.Value.GetProperty("key").GetString(), message.Parts[1].Data!.Value.GetProperty("key").GetString());
         Assert.Equal(expectedMessage.Metadata["metaKey"].GetString(), message.Metadata!["metaKey"].GetString());
         Assert.Equal(expectedMessage.ReferenceTaskIds, message.ReferenceTaskIds);
         Assert.Equal(expectedMessage.MessageId, message.MessageId);
@@ -543,7 +543,7 @@ public class A2AClientTests
             Parts =
             [
                 new TextPart { Text = "Test text" },
-                new DataPart { Data = new Dictionary<string, JsonElement> { { "key", JsonDocument.Parse("\"value\"").RootElement } } },
+                new DataPart { Data = JsonSerializer.SerializeToElement(new Dictionary<string, JsonElement> { { "key", JsonDocument.Parse("\"value\"").RootElement } }) },
             ],
             Metadata = new Dictionary<string, JsonElement> { { "metaKey", JsonDocument.Parse("\"metaValue\"").RootElement } },
             ReferenceTaskIds = ["ref1", "ref2"],
@@ -567,10 +567,10 @@ public class A2AClientTests
         var message = Assert.IsType<AgentMessage>(result.Value.Data);
         Assert.Equal(expectedMessage.Role, message.Role);
         Assert.Equal(expectedMessage.Parts.Count, message.Parts.Count);
-        Assert.IsType<TextPart>(message.Parts[0]);
-        Assert.Equal(((TextPart)expectedMessage.Parts[0]).Text, ((TextPart)message.Parts[0]).Text);
-        Assert.IsType<DataPart>(message.Parts[1]);
-        Assert.Equal(((DataPart)expectedMessage.Parts[1]).Data["key"].GetString(), ((DataPart)message.Parts[1]).Data["key"].GetString());
+        Assert.NotNull(message.Parts[0].Text);
+        Assert.Equal(expectedMessage.Parts[0].Text, message.Parts[0].Text);
+        Assert.NotNull(message.Parts[1].Data);
+        Assert.Equal(expectedMessage.Parts[1].Data!.Value.GetProperty("key").GetString(), message.Parts[1].Data!.Value.GetProperty("key").GetString());
         Assert.Equal(expectedMessage.Metadata["metaKey"].GetString(), message.Metadata!["metaKey"].GetString());
         Assert.Equal(expectedMessage.ReferenceTaskIds, message.ReferenceTaskIds);
         Assert.Equal(expectedMessage.MessageId, message.MessageId);

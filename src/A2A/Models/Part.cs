@@ -4,65 +4,192 @@ using System.Text.Json.Serialization;
 namespace A2A;
 
 /// <summary>
-/// Represents a part of a message, which can be text, a file, or structured data.
+/// Represents a container for a section of communication content.
+/// Parts can be purely textual, a file (raw bytes or URL), or structured data.
+/// Exactly one of <see cref="Text"/>, <see cref="Raw"/>, <see cref="Url"/>, or <see cref="Data"/> must be set.
 /// </summary>
-/// <param name="kind">The <c>kind</c> discriminator value</param>
-[JsonConverter(typeof(PartConverterViaKindDiscriminator<Part>))]
-[JsonDerivedType(typeof(TextPart))]
-[JsonDerivedType(typeof(FilePart))]
-[JsonDerivedType(typeof(DataPart))]
-// You might be wondering why we don't use JsonPolymorphic here. The reason is that it automatically throws a NotSupportedException if the 
-// discriminator isn't present or accounted for. In the case of A2A, we want to throw a more specific A2AException with an error code, so
-// we implement our own converter to handle that, with the discriminator logic implemented by-hand.
-public abstract class Part(string kind)
+[JsonConverter(typeof(PartConverter))]
+public class Part
 {
     /// <summary>
-    /// The 'kind' discriminator value
+    /// The string content of a text part.
     /// </summary>
-    [JsonRequired, JsonPropertyName(BaseKindDiscriminatorConverter<Part>.DiscriminatorPropertyName), JsonInclude, JsonPropertyOrder(int.MinValue)]
-    public string Kind { get; internal set; } = kind;
+    [JsonPropertyName("text")]
+    public string? Text { get; set; }
+
     /// <summary>
-    /// Optional metadata associated with the part.
+    /// The raw byte content of a file. In JSON serialization, this is encoded as a base64 string.
+    /// </summary>
+    [JsonPropertyName("raw")]
+    public string? Raw { get; set; }
+
+    /// <summary>
+    /// A URL pointing to the file's content.
+    /// </summary>
+    [JsonPropertyName("url")]
+    public string? Url { get; set; }
+
+    /// <summary>
+    /// Arbitrary structured data as a JSON value (object, array, string, number, boolean, or null).
+    /// </summary>
+    [JsonPropertyName("data")]
+    public JsonElement? Data { get; set; }
+
+    /// <summary>
+    /// Optional metadata associated with this part.
     /// </summary>
     [JsonPropertyName("metadata")]
     public Dictionary<string, JsonElement>? Metadata { get; set; }
 
     /// <summary>
-    /// Casts this part to a TextPart.
+    /// An optional name for the file (e.g., "document.pdf").
     /// </summary>
-    /// <returns>The part as a TextPart.</returns>
-    /// <exception cref="InvalidCastException">Thrown when the part is not a TextPart.</exception>
-    public TextPart AsTextPart() => this is TextPart textPart ?
-        textPart :
-        throw new InvalidCastException($"Cannot cast {GetType().Name} to TextPart.");
+    [JsonPropertyName("filename")]
+    public string? Filename { get; set; }
 
     /// <summary>
-    /// Casts this part to a FilePart.
+    /// The media type (MIME type) of the part content (e.g., "text/plain", "application/json", "image/png").
     /// </summary>
-    /// <returns>The part as a FilePart.</returns>
-    /// <exception cref="InvalidCastException">Thrown when the part is not a FilePart.</exception>
-    public FilePart AsFilePart() => this is FilePart filePart ?
-        filePart :
-        throw new InvalidCastException($"Cannot cast {GetType().Name} to FilePart.");
+    [JsonPropertyName("mediaType")]
+    public string? MediaType { get; set; }
 
     /// <summary>
-    /// Casts this part to a DataPart.
+    /// Creates a text part.
     /// </summary>
-    /// <returns>The part as a DataPart.</returns>
-    /// <exception cref="InvalidCastException">Thrown when the part is not a DataPart.</exception>
-    public DataPart AsDataPart() => this is DataPart dataPart ?
-        dataPart :
-        throw new InvalidCastException($"Cannot cast {GetType().Name} to DataPart.");
+    /// <param name="text">The text content.</param>
+    public static Part FromText(string text) => new() { Text = text };
+
+    /// <summary>
+    /// Creates a file part from raw bytes (base64 encoded).
+    /// </summary>
+    /// <param name="base64Bytes">The base64-encoded file content.</param>
+    /// <param name="mediaType">The MIME type of the content.</param>
+    /// <param name="filename">An optional filename.</param>
+    public static Part FromRaw(string base64Bytes, string? mediaType = null, string? filename = null) =>
+        new() { Raw = base64Bytes, MediaType = mediaType, Filename = filename };
+
+    /// <summary>
+    /// Creates a file part from a URL.
+    /// </summary>
+    /// <param name="url">The URL pointing to the file content.</param>
+    /// <param name="mediaType">The MIME type of the content.</param>
+    /// <param name="filename">An optional filename.</param>
+    public static Part FromUrl(string url, string? mediaType = null, string? filename = null) =>
+        new() { Url = url, MediaType = mediaType, Filename = filename };
+
+    /// <summary>
+    /// Creates a structured data part.
+    /// </summary>
+    /// <param name="data">The structured data as a JSON element.</param>
+    /// <param name="mediaType">The MIME type of the content.</param>
+    public static Part FromData(JsonElement data, string? mediaType = null) =>
+        new() { Data = data, MediaType = mediaType };
 }
 
-internal class PartConverterViaKindDiscriminator<T> : BaseKindDiscriminatorConverter<T> where T : Part
+internal sealed class PartConverter : JsonConverter<Part>
 {
-    protected override IReadOnlyDictionary<string, Type> KindToTypeMapping { get; } = new Dictionary<string, Type>
+    public override Part Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
-        [PartKind.Text] = typeof(TextPart),
-        [PartKind.File] = typeof(FilePart),
-        [PartKind.Data] = typeof(DataPart)
-    };
+        if (reader.TokenType != JsonTokenType.StartObject)
+        {
+            throw new A2AException("Expected JSON object for Part", A2AErrorCode.InvalidRequest);
+        }
 
-    protected override string DisplayName { get; } = "part";
+        using var document = JsonDocument.ParseValue(ref reader);
+        var root = document.RootElement;
+
+        var part = new Part();
+
+        if (root.TryGetProperty("text", out var textProp))
+        {
+            part.Text = textProp.GetString();
+        }
+
+        if (root.TryGetProperty("raw", out var rawProp))
+        {
+            part.Raw = rawProp.GetString();
+        }
+
+        if (root.TryGetProperty("url", out var urlProp))
+        {
+            part.Url = urlProp.GetString();
+        }
+
+        if (root.TryGetProperty("data", out var dataProp))
+        {
+            part.Data = dataProp.Clone();
+        }
+
+        if (root.TryGetProperty("metadata", out var metadataProp) && metadataProp.ValueKind == JsonValueKind.Object)
+        {
+            var metadata = new Dictionary<string, JsonElement>();
+            foreach (var prop in metadataProp.EnumerateObject())
+            {
+                metadata[prop.Name] = prop.Value.Clone();
+            }
+            part.Metadata = metadata;
+        }
+
+        if (root.TryGetProperty("filename", out var filenameProp))
+        {
+            part.Filename = filenameProp.GetString();
+        }
+
+        if (root.TryGetProperty("mediaType", out var mediaTypeProp))
+        {
+            part.MediaType = mediaTypeProp.GetString();
+        }
+
+        return part;
+    }
+
+    public override void Write(Utf8JsonWriter writer, Part value, JsonSerializerOptions options)
+    {
+        writer.WriteStartObject();
+
+        if (value.Text is not null)
+        {
+            writer.WriteString("text", value.Text);
+        }
+
+        if (value.Raw is not null)
+        {
+            writer.WriteString("raw", value.Raw);
+        }
+
+        if (value.Url is not null)
+        {
+            writer.WriteString("url", value.Url);
+        }
+
+        if (value.Data is { } data)
+        {
+            writer.WritePropertyName("data");
+            data.WriteTo(writer);
+        }
+
+        if (value.Metadata is { Count: > 0 } metadata)
+        {
+            writer.WritePropertyName("metadata");
+            writer.WriteStartObject();
+            foreach (var kvp in metadata)
+            {
+                writer.WritePropertyName(kvp.Key);
+                kvp.Value.WriteTo(writer);
+            }
+            writer.WriteEndObject();
+        }
+
+        if (value.Filename is not null)
+        {
+            writer.WriteString("filename", value.Filename);
+        }
+
+        if (value.MediaType is not null)
+        {
+            writer.WriteString("mediaType", value.MediaType);
+        }
+
+        writer.WriteEndObject();
+    }
 }

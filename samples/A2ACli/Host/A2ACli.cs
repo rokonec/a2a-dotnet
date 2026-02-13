@@ -202,13 +202,7 @@ public static class A2ACli
                 string fileContent = Convert.ToBase64String(fileBytes);
                 string fileName = Path.GetFileName(filePath);
 
-                message.Parts.Add(new FilePart
-                {
-                    File = new FileContent(fileContent)
-                    {
-                        Name = fileName,
-                    }
-                });
+                message.Parts.Add(Part.FromRaw(fileContent, filename: fileName));
             }
             catch (Exception ex)
             {
