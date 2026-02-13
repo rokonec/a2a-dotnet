@@ -533,4 +533,78 @@ public class A2AJsonRpcProcessorTests
         var bodyContent = await JsonSerializer.DeserializeAsync<TBody>(context.Response.Body, A2AJsonUtilities.DefaultOptions);
         return (context.Response.StatusCode, context.Response.ContentType, bodyContent!);
     }
+
+    [Theory]
+    [InlineData("1.0", false)]    // v1.0 supported
+    [InlineData("0.3", false)]    // v0.3 supported
+    [InlineData("", false)]       // Empty = v0.3 per spec
+    [InlineData("2.0", true)]     // v2.0 not supported
+    [InlineData("0.5", true)]     // v0.5 not supported
+    public async Task ProcessRequest_VersionHeader_HandledCorrectly(string version, bool expectError)
+    {
+        // Arrange
+        var taskManager = new TaskManager();
+        var jsonRequest = $$"""
+        {
+            "jsonrpc": "2.0",
+            "method": "{{A2AMethods.SendMessage}}",
+            "id": "test-id",
+            "params": {
+                "message": {
+                    "messageId": "test-message-id",
+                    "role": "ROLE_USER",
+                    "parts": [{ "text":"hi" }]
+                }
+            }
+        }
+        """;
+
+        var httpRequest = CreateHttpRequestFromJson(jsonRequest);
+        if (!string.IsNullOrEmpty(version))
+        {
+            httpRequest.Headers["A2A-Version"] = version;
+        }
+
+        // Act
+        var result = await A2AJsonRpcProcessor.ProcessRequestAsync(taskManager, httpRequest, CancellationToken.None);
+
+        // Assert
+        var responseResult = Assert.IsType<JsonRpcResponseResult>(result);
+        var (StatusCode, ContentType, BodyContent) = await GetJsonRpcResponseHttpDetails<JsonRpcResponse>(responseResult);
+
+        if (expectError)
+        {
+            Assert.NotNull(BodyContent.Error);
+            Assert.Equal((int)A2AErrorCode.VersionNotSupported, BodyContent.Error.Code);
+        }
+        else
+        {
+            Assert.Null(BodyContent.Error);
+        }
+    }
+
+    [Fact]
+    public async Task ProcessRequest_V10_MethodNames_Work()
+    {
+        // Arrange - verify v1.0 PascalCase method names work
+        var taskManager = new TaskManager();
+        var task = await taskManager.CreateTaskAsync();
+
+        var req = new JsonRpcRequest
+        {
+            Id = "test",
+            Method = "GetTask",
+            Params = ToJsonElement(new TaskQueryParams { Id = task.Id })
+        };
+
+        var httpRequest = CreateHttpRequest(req);
+
+        // Act
+        var result = await A2AJsonRpcProcessor.ProcessRequestAsync(taskManager, httpRequest, CancellationToken.None);
+
+        // Assert
+        var responseResult = Assert.IsType<JsonRpcResponseResult>(result);
+        var (_, _, BodyContent) = await GetJsonRpcResponseHttpDetails<JsonRpcResponse>(responseResult);
+        Assert.NotNull(BodyContent.Result);
+    }
 }
