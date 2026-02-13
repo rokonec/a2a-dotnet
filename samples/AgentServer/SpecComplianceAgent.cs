@@ -56,10 +56,10 @@ public class SpecComplianceAgent
         {
             Name = "A2A Specification Compliance Agent",
             Description = "Agent to run A2A specification compliance tests.",
-            Url = agentUrl,
+            SupportedInterfaces = [new AgentInterface { Url = agentUrl }],
             Version = "1.0.0",
-            DefaultInputModes = ["text"],
-            DefaultOutputModes = ["text"],
+            DefaultInputModes = ["text/plain"],
+            DefaultOutputModes = ["text/plain"],
             Capabilities = capabilities,
             Skills = [],
         });

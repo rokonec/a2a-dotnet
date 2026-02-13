@@ -106,7 +106,7 @@ public static class A2ACli
             int notificationReceiverPort = notificationReceiverUri.Port;
 
             // Create A2A client
-            var client = new A2AClient(new Uri(card.Url));
+            var client = new A2AClient(new Uri(card.SupportedInterfaces[0].Url));
 
             // Create or use provided session ID
             string sessionId = session == "0" ? Guid.NewGuid().ToString("N") : session;

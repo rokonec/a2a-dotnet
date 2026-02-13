@@ -8,18 +8,22 @@ public class AgentCardTests
         {
           "name": "Test Agent",
           "description": "A test agent for MVP serialization",
-          "url": "https://example.com/agent",
+          "supportedInterfaces": [
+            {
+              "url": "https://example.com/agent",
+              "protocolBinding": "JSONRPC",
+              "protocolVersion": "1.0"
+            }
+          ],
           "provider": {
             "organization": "Test Org",
             "url": "https://testorg.com"
           },
           "version": "1.0.0",
-          "protocolVersion": "0.3.0",
           "documentationUrl": "https://docs.example.com",
           "capabilities": {
             "streaming": true,
-            "pushNotifications": false,
-            "stateTransitionHistory": true
+            "pushNotifications": false
           },
           "securitySchemes": {
             "apiKey": {
@@ -29,7 +33,7 @@ public class AgentCardTests
               }
             }
           },
-          "security": [
+          "securityRequirements": [
             {
               "apiKey": []
             }
@@ -52,14 +56,6 @@ public class AgentCardTests
               ]
             }
           ],
-          "supportsAuthenticatedExtendedCard": true,
-          "additionalInterfaces": [
-            {
-              "transport": "JSONRPC",
-              "url": "https://jsonrpc.example.com/agent"
-            }
-          ],
-          "preferredTransport": "GRPC",
           "signatures": [
             {
               "protected": "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpPU0UiLCJraWQiOiJrZXktMSIsImprdSI6Imh0dHBzOi8vZXhhbXBsZS5jb20vYWdlbnQvandrcy5qc29uIn0",
@@ -79,11 +75,10 @@ public class AgentCardTests
         Assert.NotNull(deserializedCard);
         Assert.Equal("Test Agent", deserializedCard.Name);
         Assert.Equal("A test agent for MVP serialization", deserializedCard.Description);
-        Assert.Equal("https://example.com/agent", deserializedCard.Url);
+        Assert.Equal("https://example.com/agent", deserializedCard.SupportedInterfaces[0].Url);
         Assert.Equal("1.0.0", deserializedCard.Version);
-        Assert.Equal("0.3.0", deserializedCard.ProtocolVersion);
+        Assert.Equal("1.0", deserializedCard.SupportedInterfaces[0].ProtocolVersion);
         Assert.Equal("https://docs.example.com", deserializedCard.DocumentationUrl);
-        Assert.True(deserializedCard.SupportsAuthenticatedExtendedCard);
 
         // Provider
         Assert.NotNull(deserializedCard.Provider);
@@ -94,7 +89,6 @@ public class AgentCardTests
         Assert.NotNull(deserializedCard.Capabilities);
         Assert.True(deserializedCard.Capabilities.Streaming);
         Assert.False(deserializedCard.Capabilities.PushNotifications);
-        Assert.True(deserializedCard.Capabilities.StateTransitionHistory);
 
         // Security
         Assert.NotNull(deserializedCard.SecuritySchemes);
@@ -105,10 +99,10 @@ public class AgentCardTests
         Assert.False(string.IsNullOrWhiteSpace(apisec.Name));
         Assert.False(string.IsNullOrWhiteSpace(apisec.Location));
 
-        Assert.NotNull(deserializedCard.Security);
-        Assert.Single(deserializedCard.Security);
+        Assert.NotNull(deserializedCard.SecurityRequirements);
+        Assert.Single(deserializedCard.SecurityRequirements);
 
-        var securityRequirement = deserializedCard.Security[0];
+        var securityRequirement = deserializedCard.SecurityRequirements[0];
         Assert.NotNull(securityRequirement);
         Assert.Single(securityRequirement);
         Assert.True(securityRequirement.ContainsKey("apiKey"));
@@ -139,12 +133,11 @@ public class AgentCardTests
         Assert.True(skillSecurityRequirement.ContainsKey("oauth"));
         Assert.Equal(["read"], skillSecurityRequirement["oauth"]);
 
-        // Transport properties
-        Assert.Equal("GRPC", deserializedCard.PreferredTransport.Label);
-        Assert.NotNull(deserializedCard.AdditionalInterfaces);
-        Assert.Single(deserializedCard.AdditionalInterfaces);
-        Assert.Equal("JSONRPC", deserializedCard.AdditionalInterfaces[0].Transport.Label);
-        Assert.Equal("https://jsonrpc.example.com/agent", deserializedCard.AdditionalInterfaces[0].Url);
+        // SupportedInterfaces
+        Assert.NotNull(deserializedCard.SupportedInterfaces);
+        Assert.Single(deserializedCard.SupportedInterfaces);
+        Assert.Equal("JSONRPC", deserializedCard.SupportedInterfaces[0].ProtocolBinding);
+        Assert.Equal("https://example.com/agent", deserializedCard.SupportedInterfaces[0].Url);
 
         // Signatures
         Assert.NotNull(deserializedCard.Signatures);
@@ -163,26 +156,31 @@ public class AgentCardTests
         {
             Name = "Test Agent",
             Description = "A test agent for MVP serialization",
-            Url = "https://example.com/agent",
+            SupportedInterfaces = [
+                new AgentInterface
+                {
+                    Url = "https://example.com/agent",
+                    ProtocolBinding = "JSONRPC",
+                    ProtocolVersion = "1.0"
+                }
+            ],
             Provider = new AgentProvider
             {
                 Organization = "Test Org",
                 Url = "https://testorg.com"
             },
             Version = "1.0.0",
-            ProtocolVersion = "0.3.0",
             DocumentationUrl = "https://docs.example.com",
             Capabilities = new AgentCapabilities
             {
                 Streaming = true,
-                PushNotifications = false,
-                StateTransitionHistory = true
+                PushNotifications = false
             },
             SecuritySchemes = new Dictionary<string, SecurityScheme>
             {
                 ["apiKey"] = new SecurityScheme { ApiKeySecurityScheme = new ApiKeySecurityScheme { Name = "X-API-Key", Location = "header" } }
             },
-            Security = new List<Dictionary<string, string[]>>
+            SecurityRequirements = new List<Dictionary<string, List<string>>>
             {
                 new()
                 {
@@ -209,15 +207,6 @@ public class AgentCardTests
                     ]
                 }
             ],
-            SupportsAuthenticatedExtendedCard = true,
-            AdditionalInterfaces = [
-                new AgentInterface
-                {
-                    Transport = AgentTransport.JsonRpc,
-                    Url = "https://jsonrpc.example.com/agent"
-                }
-            ],
-            PreferredTransport = new AgentTransport("GRPC"),
             Signatures = [
                 new AgentCardSignature
                 {
@@ -241,11 +230,10 @@ public class AgentCardTests
         // Compare key properties
         Assert.Equal(expectedCard.Name, actualCard.Name);
         Assert.Equal(expectedCard.Description, actualCard.Description);
-        Assert.Equal(expectedCard.Url, actualCard.Url);
+        Assert.Equal(expectedCard.SupportedInterfaces[0].Url, actualCard.SupportedInterfaces[0].Url);
         Assert.Equal(expectedCard.Version, actualCard.Version);
-        Assert.Equal(expectedCard.ProtocolVersion, actualCard.ProtocolVersion);
+        Assert.Equal(expectedCard.SupportedInterfaces[0].ProtocolVersion, actualCard.SupportedInterfaces[0].ProtocolVersion);
         Assert.Equal(expectedCard.DocumentationUrl, actualCard.DocumentationUrl);
-        Assert.Equal(expectedCard.SupportsAuthenticatedExtendedCard, actualCard.SupportsAuthenticatedExtendedCard);
 
         // Provider
         Assert.Equal(expectedCard.Provider?.Organization, actualCard.Provider?.Organization);
@@ -254,7 +242,6 @@ public class AgentCardTests
         // Capabilities
         Assert.Equal(expectedCard.Capabilities?.Streaming, actualCard.Capabilities?.Streaming);
         Assert.Equal(expectedCard.Capabilities?.PushNotifications, actualCard.Capabilities?.PushNotifications);
-        Assert.Equal(expectedCard.Capabilities?.StateTransitionHistory, actualCard.Capabilities?.StateTransitionHistory);
 
         // Input/Output modes
         Assert.Equal(expectedCard.DefaultInputModes, actualCard.DefaultInputModes);
@@ -287,17 +274,16 @@ public class AgentCardTests
             }
         }
 
-        // Transport properties
-        Assert.Equal(expectedCard.PreferredTransport.Label, actualCard.PreferredTransport.Label);
-        Assert.Equal(expectedCard.AdditionalInterfaces?.Count, actualCard.AdditionalInterfaces?.Count);
-        if (expectedCard.AdditionalInterfaces?.Count > 0 && actualCard.AdditionalInterfaces?.Count > 0)
+        // SupportedInterfaces
+        Assert.Equal(expectedCard.SupportedInterfaces?.Count, actualCard.SupportedInterfaces?.Count);
+        if (expectedCard.SupportedInterfaces?.Count > 0 && actualCard.SupportedInterfaces?.Count > 0)
         {
-            Assert.Equal(expectedCard.AdditionalInterfaces[0].Transport.Label, actualCard.AdditionalInterfaces[0].Transport.Label);
-            Assert.Equal(expectedCard.AdditionalInterfaces[0].Url, actualCard.AdditionalInterfaces[0].Url);
+            Assert.Equal(expectedCard.SupportedInterfaces[0].ProtocolBinding, actualCard.SupportedInterfaces[0].ProtocolBinding);
+            Assert.Equal(expectedCard.SupportedInterfaces[0].Url, actualCard.SupportedInterfaces[0].Url);
         }
 
         // Security schemes
         Assert.Equal(expectedCard.SecuritySchemes?.Count, actualCard.SecuritySchemes?.Count);
-        Assert.Equal(expectedCard.Security?.Count, actualCard.Security?.Count);
+        Assert.Equal(expectedCard.SecurityRequirements?.Count, actualCard.SecurityRequirements?.Count);
     }
 }

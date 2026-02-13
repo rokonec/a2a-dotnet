@@ -8,26 +8,26 @@ namespace A2A;
 public sealed class AgentCapabilities
 {
     /// <summary>
-    /// Gets or sets a value indicating whether the agent supports SSE.
+    /// Indicates if the agent supports streaming responses.
     /// </summary>
     [JsonPropertyName("streaming")]
-    public bool Streaming { get; set; }
+    public bool? Streaming { get; set; }
 
     /// <summary>
-    /// Gets or sets a value indicating whether the agent can notify updates to client.
+    /// Indicates if the agent supports sending push notifications for asynchronous task updates.
     /// </summary>
     [JsonPropertyName("pushNotifications")]
-    public bool PushNotifications { get; set; }
+    public bool? PushNotifications { get; set; }
 
     /// <summary>
-    /// Gets or sets a value indicating whether the agent exposes status change history for tasks.
-    /// </summary>
-    [JsonPropertyName("stateTransitionHistory")]
-    public bool StateTransitionHistory { get; set; }
-
-    /// <summary>
-    /// Extensions supported by this agent.
+    /// A list of protocol extensions supported by the agent.
     /// </summary>
     [JsonPropertyName("extensions")]
-    public List<AgentExtension> Extensions { get; set; } = [];
+    public List<AgentExtension>? Extensions { get; set; }
+
+    /// <summary>
+    /// Indicates if the agent supports providing an extended agent card when authenticated.
+    /// </summary>
+    [JsonPropertyName("extendedAgentCard")]
+    public bool? ExtendedAgentCard { get; set; }
 }

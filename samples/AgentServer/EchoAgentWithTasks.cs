@@ -58,10 +58,10 @@ public class EchoAgentWithTasks
         {
             Name = "Echo Agent",
             Description = "Agent which will echo every message it receives.",
-            Url = agentUrl,
+            SupportedInterfaces = [new AgentInterface { Url = agentUrl }],
             Version = "1.0.0",
-            DefaultInputModes = ["text"],
-            DefaultOutputModes = ["text"],
+            DefaultInputModes = ["text/plain"],
+            DefaultOutputModes = ["text/plain"],
             Capabilities = capabilities,
             Skills = [],
         });

@@ -58,7 +58,7 @@ internal sealed class TaskBasedCommunicationSample
         AgentCard echoAgentCard = await cardResolver.GetAgentCardAsync();
 
         // 3. Create an A2A client to communicate with the echotasks agent using the URL from the agent card
-        A2AClient agentClient = new(new Uri(echoAgentCard.Url));
+        A2AClient agentClient = new(new Uri(echoAgentCard.SupportedInterfaces[0].Url));
 
         // 4. Demo a short-lived task
         await DemoShortLivedTaskAsync(agentClient);

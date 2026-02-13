@@ -57,7 +57,7 @@ internal sealed class MessageBasedCommunicationSample
         AgentCard echoAgentCard = await cardResolver.GetAgentCardAsync();
 
         // 2. Create an A2A client to communicate with the agent using url from the agent card
-        A2AClient agentClient = new(new Uri(echoAgentCard.Url));
+        A2AClient agentClient = new(new Uri(echoAgentCard.SupportedInterfaces[0].Url));
 
         // 3. Create a message to send to the agent
         AgentMessage userMessage = new()

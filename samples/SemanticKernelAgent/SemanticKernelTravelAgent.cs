@@ -198,10 +198,10 @@ public class SemanticKernelTravelAgent : IDisposable
         {
             Name = "SK Travel Agent",
             Description = "Semantic Kernel-based travel agent providing comprehensive trip planning services including currency exchange and personalized activity planning.",
-            Url = agentUrl,
+            SupportedInterfaces = [new AgentInterface { Url = agentUrl }],
             Version = "1.0.0",
-            DefaultInputModes = ["text"],
-            DefaultOutputModes = ["text"],
+            DefaultInputModes = ["text/plain"],
+            DefaultOutputModes = ["text/plain"],
             Capabilities = capabilities,
             Skills = [skillTripPlanning],
         });
