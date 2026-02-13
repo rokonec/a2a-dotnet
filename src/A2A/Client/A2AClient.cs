@@ -94,6 +94,24 @@ public sealed class A2AClient : IA2AClient
             A2AJsonUtilities.JsonContext.Default.A2AEvent,
             cancellationToken);
 
+    /// <inheritdoc />
+    public Task<ListTasksResponse> ListTasksAsync(ListTasksRequest request, CancellationToken cancellationToken = default) =>
+        SendRpcRequestAsync(
+            request ?? throw new ArgumentNullException(nameof(request)),
+            A2AMethods.ListTasks,
+            A2AJsonUtilities.JsonContext.Default.ListTasksRequest,
+            A2AJsonUtilities.JsonContext.Default.ListTasksResponse,
+            cancellationToken);
+
+    /// <inheritdoc />
+    public Task<AgentCard> GetExtendedAgentCardAsync(CancellationToken cancellationToken = default) =>
+        SendRpcRequestAsync(
+            new GetExtendedAgentCardRequest(),
+            A2AMethods.GetExtendedAgentCard,
+            A2AJsonUtilities.JsonContext.Default.GetExtendedAgentCardRequest,
+            A2AJsonUtilities.JsonContext.Default.AgentCard,
+            cancellationToken);
+
     private async Task<TOutput> SendRpcRequestAsync<TInput, TOutput>(
         TInput jsonRpcParams,
         string method,

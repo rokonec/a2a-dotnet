@@ -65,4 +65,19 @@ public interface IA2AClient
     /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
     /// <returns>The push notification configuration for the specified task.</returns>
     Task<TaskPushNotificationConfig> GetPushNotificationAsync(GetTaskPushNotificationConfigParams notificationConfigParams, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Lists tasks with optional filtering and pagination.
+    /// </summary>
+    /// <param name="request">The list tasks request parameters.</param>
+    /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
+    /// <returns>The list of tasks matching the criteria.</returns>
+    Task<ListTasksResponse> ListTasksAsync(ListTasksRequest request, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Retrieves the extended agent card for authenticated users.
+    /// </summary>
+    /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
+    /// <returns>The extended agent card.</returns>
+    Task<AgentCard> GetExtendedAgentCardAsync(CancellationToken cancellationToken = default);
 }
