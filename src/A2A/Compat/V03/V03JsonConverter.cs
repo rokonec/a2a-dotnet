@@ -80,7 +80,7 @@ namespace A2A.Compat.V03
 
         /// <summary>
         /// Returns a copy of the provided <see cref="JsonSerializerOptions"/> with this
-        /// <see cref="A2AJsonConverter{T}"/> removed from its <see cref="JsonSerializerOptions.Converters"/> chain.
+        /// <see cref="V03JsonConverter{T}"/> removed from its <see cref="JsonSerializerOptions.Converters"/> chain.
         /// </summary>
         /// <remarks>
         /// This converter delegates to the source-generated or built-in converter for <typeparamref name="T"/> by
