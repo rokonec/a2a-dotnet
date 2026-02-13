@@ -32,12 +32,12 @@ public sealed class A2AClient : IA2AClient
     }
 
     /// <inheritdoc />
-    public Task<A2AResponse> SendMessageAsync(MessageSendParams taskSendParams, CancellationToken cancellationToken = default) =>
+    public Task<SendMessageResponse> SendMessageAsync(MessageSendParams taskSendParams, CancellationToken cancellationToken = default) =>
         SendRpcRequestAsync(
             taskSendParams ?? throw new ArgumentNullException(nameof(taskSendParams)),
             A2AMethods.SendMessage,
             A2AJsonUtilities.JsonContext.Default.MessageSendParams,
-            A2AJsonUtilities.JsonContext.Default.A2AResponse,
+            A2AJsonUtilities.JsonContext.Default.SendMessageResponse,
             cancellationToken);
 
     /// <inheritdoc />
@@ -77,21 +77,21 @@ public sealed class A2AClient : IA2AClient
             cancellationToken);
 
     /// <inheritdoc />
-    public IAsyncEnumerable<SseItem<A2AEvent>> SendMessageStreamingAsync(MessageSendParams taskSendParams, CancellationToken cancellationToken = default) =>
+    public IAsyncEnumerable<SseItem<StreamResponse>> SendMessageStreamingAsync(MessageSendParams taskSendParams, CancellationToken cancellationToken = default) =>
         SendRpcSseRequestAsync(
             taskSendParams ?? throw new ArgumentNullException(nameof(taskSendParams)),
             A2AMethods.SendStreamingMessage,
             A2AJsonUtilities.JsonContext.Default.MessageSendParams,
-            A2AJsonUtilities.JsonContext.Default.A2AEvent,
+            A2AJsonUtilities.JsonContext.Default.StreamResponse,
             cancellationToken);
 
     /// <inheritdoc />
-    public IAsyncEnumerable<SseItem<A2AEvent>> SubscribeToTaskAsync(string taskId, CancellationToken cancellationToken = default) =>
+    public IAsyncEnumerable<SseItem<StreamResponse>> SubscribeToTaskAsync(string taskId, CancellationToken cancellationToken = default) =>
         SendRpcSseRequestAsync(
             new() { Id = string.IsNullOrEmpty(taskId) ? throw new ArgumentNullException(nameof(taskId)) : taskId },
             A2AMethods.SubscribeToTask,
             A2AJsonUtilities.JsonContext.Default.TaskIdParams,
-            A2AJsonUtilities.JsonContext.Default.A2AEvent,
+            A2AJsonUtilities.JsonContext.Default.StreamResponse,
             cancellationToken);
 
     /// <inheritdoc />

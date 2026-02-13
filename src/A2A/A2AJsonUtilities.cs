@@ -42,9 +42,6 @@ public static partial class A2AJsonUtilities
         // Chain with all supported types from MEAI.
         opts.TypeInfoResolverChain.Add(AIJsonUtilities.DefaultOptions.TypeInfoResolver!);
 
-        // Register custom converters at options-level (not attributes)
-        opts.Converters.Add(new A2AJsonConverter<MessageSendParams>());
-
         opts.MakeReadOnly();
         return opts;
     });
@@ -63,8 +60,8 @@ public static partial class A2AJsonUtilities
     [JsonSerializable(typeof(Dictionary<string, JsonElement>))]
 
     // A2A
-    [JsonSerializable(typeof(A2AEvent))]
-    [JsonSerializable(typeof(A2AResponse))]
+    [JsonSerializable(typeof(StreamResponse))]
+    [JsonSerializable(typeof(SendMessageResponse))]
     [JsonSerializable(typeof(AgentCard))]
     [JsonSerializable(typeof(AgentTask))]
     [JsonSerializable(typeof(GetTaskPushNotificationConfigParams))]

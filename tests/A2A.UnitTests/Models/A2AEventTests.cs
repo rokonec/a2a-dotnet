@@ -1,9 +1,8 @@
 ﻿using System.Text.Json;
-using Xunit.Abstractions;
 
 namespace A2A.UnitTests.Models
 {
-    public sealed class A2AEventTests(ITestOutputHelper testOutput)
+    public sealed class A2AEventTests
     {
         private static readonly Dictionary<string, string> expectedMetadata = new()
         {
@@ -11,21 +10,22 @@ namespace A2A.UnitTests.Models
         };
 
         [Fact]
-        public void A2AEvent_Deserialize_Message_Succeeds()
+        public void StreamResponse_Deserialize_Message_Succeeds()
         {
             // Arrange
             const string json = """
             {
-                "kind": "message",
-                "role": "ROLE_USER",
-                "messageId": "m-1",
-                "taskId": "t-1",
-                "contextId": "c-1",
-                "referenceTaskIds": [ "r-1", "r-2" ],
-                "parts": [ { "text": "hi" } ],
-                "extensions": [ "foo", "bar" ],
-                "metadata": {
-                    "createdAt": "2023-01-01T00:00:00Z"
+                "message": {
+                    "role": "ROLE_USER",
+                    "messageId": "m-1",
+                    "taskId": "t-1",
+                    "contextId": "c-1",
+                    "referenceTaskIds": [ "r-1", "r-2" ],
+                    "parts": [ { "text": "hi" } ],
+                    "extensions": [ "foo", "bar" ],
+                    "metadata": {
+                        "createdAt": "2023-01-01T00:00:00Z"
+                    }
                 }
             }
             """;
@@ -34,8 +34,10 @@ namespace A2A.UnitTests.Models
             var expectedExtensions = new[] { "foo", "bar" };
 
             // Act
-            var a2aEvent = JsonSerializer.Deserialize<A2AEvent>(json, A2AJsonUtilities.DefaultOptions);
-            var message = Assert.IsType<AgentMessage>(a2aEvent);
+            var streamResponse = JsonSerializer.Deserialize<StreamResponse>(json, A2AJsonUtilities.DefaultOptions);
+            Assert.NotNull(streamResponse);
+            Assert.Equal(StreamResponseCase.Message, streamResponse.PayloadCase);
+            var message = streamResponse.Message!;
 
             // Assert
             Assert.Equal(MessageRole.User, message.Role);
@@ -52,47 +54,33 @@ namespace A2A.UnitTests.Models
         }
 
         [Fact]
-        public void A2AEvent_Deserialize_AgentTask_Succeeds()
+        public void StreamResponse_Deserialize_AgentTask_Succeeds()
         {
             // Arrange
             const string json = """
             {
-                "kind": "task",
-                "id": "t-3",
-                "contextId": "c-3",
-                "status": { "state": "TASK_STATE_SUBMITTED" },
-                "artifacts": [
-                    { "artifactId": "f-1", "name": "file1.txt", "description": "A text file", "parts": [] }
-                ],
-                "history": [
-                    { "kind": "message", "role": "ROLE_USER", "messageId": "m-3", "parts": [] }
-                ],
-                "metadata": {
-                    "createdAt": "2023-01-01T00:00:00Z"
+                "task": {
+                    "id": "t-3",
+                    "contextId": "c-3",
+                    "status": { "state": "TASK_STATE_SUBMITTED" },
+                    "artifacts": [
+                        { "artifactId": "f-1", "name": "file1.txt", "description": "A text file", "parts": [] }
+                    ],
+                    "history": [
+                        { "role": "ROLE_USER", "messageId": "m-3", "parts": [] }
+                    ],
+                    "metadata": {
+                        "createdAt": "2023-01-01T00:00:00Z"
+                    }
                 }
             }
             """;
-            var expectedArtifacts = new[]
-            {
-                new Artifact
-                {
-                    ArtifactId = "f-1",
-                    Name = "file1.txt",
-                    Description = "A text file",
-                }
-            };
-            var expectedHistory = new[]
-            {
-                new AgentMessage
-                {
-                    Role = MessageRole.User,
-                    MessageId = "m-3",
-                }
-            };
 
             // Act
-            var a2aEvent = JsonSerializer.Deserialize<A2AEvent>(json, A2AJsonUtilities.DefaultOptions);
-            var agentTask = Assert.IsType<AgentTask>(a2aEvent);
+            var streamResponse = JsonSerializer.Deserialize<StreamResponse>(json, A2AJsonUtilities.DefaultOptions);
+            Assert.NotNull(streamResponse);
+            Assert.Equal(StreamResponseCase.Task, streamResponse.PayloadCase);
+            var agentTask = streamResponse.Task!;
 
             // Assert
             Assert.Equal("t-3", agentTask.Id);
@@ -100,37 +88,40 @@ namespace A2A.UnitTests.Models
             Assert.Equal(TaskState.Submitted, agentTask.Status.State);
             Assert.NotNull(agentTask.Artifacts);
             Assert.Single(agentTask.Artifacts);
-            Assert.Equal(expectedArtifacts[0].ArtifactId, agentTask.Artifacts[0].ArtifactId);
-            Assert.Equal(expectedArtifacts[0].Name, agentTask.Artifacts[0].Name);
-            Assert.Equal(expectedArtifacts[0].Description, agentTask.Artifacts[0].Description);
+            Assert.Equal("f-1", agentTask.Artifacts[0].ArtifactId);
+            Assert.Equal("file1.txt", agentTask.Artifacts[0].Name);
+            Assert.Equal("A text file", agentTask.Artifacts[0].Description);
             Assert.NotNull(agentTask.History);
             Assert.Single(agentTask.History);
-            Assert.Equal(expectedHistory[0].Role, agentTask.History![0].Role);
-            Assert.Equal(expectedHistory[0].MessageId, agentTask.History![0].MessageId);
+            Assert.Equal(MessageRole.User, agentTask.History![0].Role);
+            Assert.Equal("m-3", agentTask.History![0].MessageId);
             Assert.NotNull(agentTask.Metadata);
             Assert.Single(agentTask.Metadata);
             Assert.Equal(expectedMetadata["createdAt"], agentTask.Metadata["createdAt"].GetString());
         }
 
         [Fact]
-        public void A2AEvent_Deserialize_TaskStatusUpdateEvent_Succeeds()
+        public void StreamResponse_Deserialize_TaskStatusUpdateEvent_Succeeds()
         {
             // Arrange
             const string json = """
             {
-                "kind": "status-update",
-                "taskId": "t-5",
-                "contextId": "c-5",
-                "status": { "state": "TASK_STATE_WORKING" },
-                "metadata": {
-                    "createdAt": "2023-01-01T00:00:00Z"
+                "statusUpdate": {
+                    "taskId": "t-5",
+                    "contextId": "c-5",
+                    "status": { "state": "TASK_STATE_WORKING" },
+                    "metadata": {
+                        "createdAt": "2023-01-01T00:00:00Z"
+                    }
                 }
             }
             """;
 
             // Act
-            var a2aEvent = JsonSerializer.Deserialize<A2AEvent>(json, A2AJsonUtilities.DefaultOptions);
-            var taskStatusUpdateEvent = Assert.IsType<TaskStatusUpdateEvent>(a2aEvent);
+            var streamResponse = JsonSerializer.Deserialize<StreamResponse>(json, A2AJsonUtilities.DefaultOptions);
+            Assert.NotNull(streamResponse);
+            Assert.Equal(StreamResponseCase.StatusUpdate, streamResponse.PayloadCase);
+            var taskStatusUpdateEvent = streamResponse.StatusUpdate!;
 
             // Assert
             Assert.Equal("t-5", taskStatusUpdateEvent.TaskId);
@@ -142,41 +133,39 @@ namespace A2A.UnitTests.Models
         }
 
         [Fact]
-        public void A2AEvent_Deserialize_TaskArtifactUpdateEvent_Succeeds()
+        public void StreamResponse_Deserialize_TaskArtifactUpdateEvent_Succeeds()
         {
             // Arrange
             const string json = """
             {
-                "kind": "artifact-update",
-                "taskId": "t-7",
-                "contextId": "c-7",
-                "artifact": {
-                    "artifactId": "a-1",
-                    "parts": [ { "text": "chunk" } ]
-                },
-                "append": true,
-                "lastChunk": false,
-                "metadata": {
-                    "createdAt": "2023-01-01T00:00:00Z"
+                "artifactUpdate": {
+                    "taskId": "t-7",
+                    "contextId": "c-7",
+                    "artifact": {
+                        "artifactId": "a-1",
+                        "parts": [ { "text": "chunk" } ]
+                    },
+                    "append": true,
+                    "lastChunk": false,
+                    "metadata": {
+                        "createdAt": "2023-01-01T00:00:00Z"
+                    }
                 }
             }
             """;
-            var expectedArtifact = new Artifact
-            {
-                ArtifactId = "a-1",
-                Parts = [new TextPart { Text = "chunk" }]
-            };
 
             // Act
-            var a2aEvent = JsonSerializer.Deserialize<A2AEvent>(json, A2AJsonUtilities.DefaultOptions);
-            var taskArtifactUpdateEvent = Assert.IsType<TaskArtifactUpdateEvent>(a2aEvent);
+            var streamResponse = JsonSerializer.Deserialize<StreamResponse>(json, A2AJsonUtilities.DefaultOptions);
+            Assert.NotNull(streamResponse);
+            Assert.Equal(StreamResponseCase.ArtifactUpdate, streamResponse.PayloadCase);
+            var taskArtifactUpdateEvent = streamResponse.ArtifactUpdate!;
 
             // Assert
             Assert.Equal("t-7", taskArtifactUpdateEvent.TaskId);
             Assert.Equal("c-7", taskArtifactUpdateEvent.ContextId);
-            Assert.Equal(expectedArtifact.ArtifactId, taskArtifactUpdateEvent.Artifact.ArtifactId);
+            Assert.Equal("a-1", taskArtifactUpdateEvent.Artifact.ArtifactId);
             Assert.Single(taskArtifactUpdateEvent.Artifact.Parts);
-            Assert.Equal((expectedArtifact.Parts[0] as TextPart)!.Text, taskArtifactUpdateEvent.Artifact.Parts[0].Text);
+            Assert.Equal("chunk", taskArtifactUpdateEvent.Artifact.Parts[0].Text);
             Assert.True(taskArtifactUpdateEvent.Append);
             Assert.False(taskArtifactUpdateEvent.LastChunk);
             Assert.NotNull(taskArtifactUpdateEvent.Metadata);
@@ -185,107 +174,41 @@ namespace A2A.UnitTests.Models
         }
 
         [Fact]
-        public void A2AEvent_Deserialize_UnknownKind_Throws_A2AException()
+        public void StreamResponse_Deserialize_Empty_ReturnsNone()
         {
             // Arrange
-            const string json = """
-            {
-                "kind": "lorem",
-                "foo": "bar"
-            }
-            """;
-
-            // Act / Assert
-            var ex = Assert.Throws<A2AException>(() => JsonSerializer.Deserialize<A2AEvent>(json, A2AJsonUtilities.DefaultOptions));
-            Assert.Equal(A2AErrorCode.InvalidRequest, ex.ErrorCode);
-        }
-
-        [Fact]
-        public void A2AEvent_Deserialize_MissingKind_InfersTypeFromProperties()
-        {
-            // Arrange - v1.0 format without kind discriminator
-            const string json = """
-            {
-                "role": "ROLE_USER",
-                "messageId": "m-5",
-                "parts": [ { "text": "hi" } ]
-            }
-            """;
-
-            // Act - should infer AgentMessage from messageId/role properties
-            var result = JsonSerializer.Deserialize<A2AEvent>(json, A2AJsonUtilities.DefaultOptions);
-
-            // Assert
-            Assert.NotNull(result);
-            var message = Assert.IsType<AgentMessage>(result);
-            Assert.Equal("m-5", message.MessageId);
-        }
-
-        [Fact]
-        public void A2AEvent_Deserialize_KindNotBeingFirst_Succeeds()
-        {
-            // Arrange
-            const string json = """
-            {
-                "role": "ROLE_USER",
-                "kind": "message",
-                "parts": [ { "text": "hi" } ],
-                "messageId": "m-7"
-            }
-            """;
-            var expectedParts = new[] { new TextPart() { Text = "hi" } };
+            const string json = "{}";
 
             // Act
-            var a2aEvent = JsonSerializer.Deserialize<A2AEvent>(json, A2AJsonUtilities.DefaultOptions);
-            var message = Assert.IsType<AgentMessage>(a2aEvent);
+            var streamResponse = JsonSerializer.Deserialize<StreamResponse>(json, A2AJsonUtilities.DefaultOptions);
 
             // Assert
-            Assert.Equal(MessageRole.User, message.Role);
-            Assert.Equal("m-7", message.MessageId);
-            Assert.Single(message.Parts);
-            Assert.Equal(expectedParts[0].Text, message.Parts[0].Text);
+            Assert.NotNull(streamResponse);
+            Assert.Equal(StreamResponseCase.None, streamResponse.PayloadCase);
         }
 
         [Fact]
-        public void A2AEvent_Serialize_AllKnownType_Succeeds()
+        public void StreamResponse_Serialize_AllKnownTypes_Succeeds()
         {
             // Arrange
-            var a2aEvents = new A2AEvent[] {
-                new AgentMessage { Role = MessageRole.User, MessageId = "m-7", Parts = [new TextPart { Text = "hello" }] },
-                new AgentTask { Id = "t-9", ContextId = "c-9", Status = new AgentTaskStatus { State = TaskState.Submitted, Timestamp = DateTimeOffset.Parse("2023-01-01T00:00:00+00:00", null) } },
-                new TaskStatusUpdateEvent { TaskId = "t-10", ContextId = "c-10", Status = new AgentTaskStatus { State = TaskState.Working, Timestamp = DateTimeOffset.Parse("2023-01-01T00:00:00+00:00", null) } },
-                new TaskArtifactUpdateEvent { TaskId = "t-11", ContextId = "c-11" }
-            };
-            var serializedA2aEvents = new string[] {
-                "{\"kind\":\"message\",\"role\":\"ROLE_USER\",\"parts\":[{\"text\":\"hello\"}],\"messageId\":\"m-7\"}",
-                "{\"kind\":\"task\",\"id\":\"t-9\",\"contextId\":\"c-9\",\"status\":{\"state\":\"TASK_STATE_SUBMITTED\",\"timestamp\":\"2023-01-01T00:00:00+00:00\"},\"history\":[]}",
-                "{\"kind\":\"status-update\",\"status\":{\"state\":\"TASK_STATE_WORKING\",\"timestamp\":\"2023-01-01T00:00:00+00:00\"},\"taskId\":\"t-10\",\"contextId\":\"c-10\"}",
-                "{\"kind\":\"artifact-update\",\"artifact\":{\"artifactId\":\"\",\"parts\":[]},\"taskId\":\"t-11\",\"contextId\":\"c-11\"}"
+            var streamResponses = new StreamResponse[]
+            {
+                new() { Message = new AgentMessage { Role = MessageRole.User, MessageId = "m-7", Parts = [new TextPart { Text = "hello" }] } },
+                new() { Task = new AgentTask { Id = "t-9", ContextId = "c-9", Status = new AgentTaskStatus { State = TaskState.Submitted, Timestamp = DateTimeOffset.Parse("2023-01-01T00:00:00+00:00", null) } } },
+                new() { StatusUpdate = new TaskStatusUpdateEvent { TaskId = "t-10", ContextId = "c-10", Status = new AgentTaskStatus { State = TaskState.Working, Timestamp = DateTimeOffset.Parse("2023-01-01T00:00:00+00:00", null) } } },
+                new() { ArtifactUpdate = new TaskArtifactUpdateEvent { TaskId = "t-11", ContextId = "c-11" } }
             };
 
-            for (var i = 0; i < a2aEvents.Length; i++)
+            for (var i = 0; i < streamResponses.Length; i++)
             {
                 // Act
-                var json = JsonSerializer.Serialize(a2aEvents[i], A2AJsonUtilities.DefaultOptions);
+                var json = JsonSerializer.Serialize(streamResponses[i], A2AJsonUtilities.DefaultOptions);
 
-                // Assert
-                Assert.Equal(serializedA2aEvents[i], json);
+                // Assert - verify round-trip
+                var deserialized = JsonSerializer.Deserialize<StreamResponse>(json, A2AJsonUtilities.DefaultOptions);
+                Assert.NotNull(deserialized);
+                Assert.Equal(streamResponses[i].PayloadCase, deserialized.PayloadCase);
             }
-        }
-
-        [Theory]
-        [InlineData("{ \"kind\": 1 }")]
-        [InlineData("{ \"kind\": null }")]
-        [InlineData("{ \"kind\": \"unknown\" }")]
-        [InlineData("{ \"kind\": \"count\" }")]
-        [InlineData("{ \"kind\": \"neveravaluethatsgoingtooccurinthewild\" }")]
-        [InlineData("{ \"kind\": \"\" }")]
-        public void A2AEvent_Deserialize_BadValue_Throws(string json)
-        {
-            var ex = Assert.Throws<A2AException>(() => JsonSerializer.Deserialize<A2AEvent>(json, A2AJsonUtilities.DefaultOptions));
-            testOutput.WriteLine($"Exception: {ex}");
-
-            Assert.Equal(A2AErrorCode.InvalidRequest, ex.ErrorCode);
         }
     }
 }

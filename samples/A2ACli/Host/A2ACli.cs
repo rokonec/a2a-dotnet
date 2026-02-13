@@ -254,7 +254,7 @@ public static class A2ACli
         }
         else
         {
-            agentTask = await client.SendMessageAsync(payload, cancellationToken) as AgentTask;
+            agentTask = (await client.SendMessageAsync(payload, cancellationToken))?.Task;
             Console.WriteLine($"\n{JsonSerializer.Serialize(agentTask, jsonOptions)}");
             agentTask?.Artifacts?
                 .SelectMany(artifact => artifact.Parts.OfType<TextPart>())

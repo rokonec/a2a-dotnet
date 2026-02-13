@@ -32,7 +32,7 @@ public enum MessageRole
 /// <summary>
 /// Represents a single message exchanged between user and agent.
 /// </summary>
-public sealed class AgentMessage() : A2AResponse(A2AEventKind.Message)
+public sealed class AgentMessage
 {
     /// <summary>
     /// Message sender's role.

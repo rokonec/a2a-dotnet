@@ -105,8 +105,8 @@ public static class A2AJsonRpcProcessor
         {
             case A2AMethods.SendMessage:
                 var taskSendParams = DeserializeAndValidate<MessageSendParams>(parameters.Value);
-                var a2aResponse = await taskManager.SendMessageAsync(taskSendParams, cancellationToken).ConfigureAwait(false);
-                response = JsonRpcResponse.CreateJsonRpcResponse(requestId, a2aResponse);
+                var SendMessageResponse = await taskManager.SendMessageAsync(taskSendParams, cancellationToken).ConfigureAwait(false);
+                response = JsonRpcResponse.CreateJsonRpcResponse(requestId, SendMessageResponse);
                 break;
             case A2AMethods.GetTask:
                 var taskIdParams = DeserializeAndValidate<TaskQueryParams>(parameters.Value);

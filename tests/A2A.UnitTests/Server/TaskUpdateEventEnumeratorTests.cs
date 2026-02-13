@@ -7,11 +7,11 @@ public class TaskUpdateEventEnumeratorTests
     {
         // Arrange
         var enumerator = new TaskUpdateEventEnumerator();
-        var evt = new TaskStatusUpdateEvent { TaskId = "t1", Status = new AgentTaskStatus { State = TaskState.Submitted } };
+        var evt = new StreamResponse { StatusUpdate = new TaskStatusUpdateEvent { TaskId = "t1", Status = new AgentTaskStatus { State = TaskState.Submitted } } };
         enumerator.NotifyEvent(evt);
 
         // Act
-        List<A2AEvent> yielded = [];
+        List<StreamResponse> yielded = [];
         await foreach (var e in enumerator.WithCancellation(new CancellationTokenSource(100).Token))
         {
             yielded.Add(e);
@@ -28,11 +28,11 @@ public class TaskUpdateEventEnumeratorTests
     {
         // Arrange
         var enumerator = new TaskUpdateEventEnumerator();
-        var evt = new TaskStatusUpdateEvent { TaskId = "t2", Status = new AgentTaskStatus { State = TaskState.Completed } };
+        var evt = new StreamResponse { StatusUpdate = new TaskStatusUpdateEvent { TaskId = "t2", Status = new AgentTaskStatus { State = TaskState.Completed } } };
         enumerator.NotifyFinalEvent(evt);
 
         // Act
-        List<A2AEvent> yielded = [];
+        List<StreamResponse> yielded = [];
         await foreach (var e in enumerator)
         {
             yielded.Add(e);
@@ -48,15 +48,15 @@ public class TaskUpdateEventEnumeratorTests
     {
         // Arrange
         var enumerator = new TaskUpdateEventEnumerator();
-        var evt1 = new TaskStatusUpdateEvent { TaskId = "t3", Status = new AgentTaskStatus { State = TaskState.Submitted } };
-        var evt2 = new TaskStatusUpdateEvent { TaskId = "t3", Status = new AgentTaskStatus { State = TaskState.Working } };
-        var evt3 = new TaskStatusUpdateEvent { TaskId = "t3", Status = new AgentTaskStatus { State = TaskState.Completed } };
+        var evt1 = new StreamResponse { StatusUpdate = new TaskStatusUpdateEvent { TaskId = "t3", Status = new AgentTaskStatus { State = TaskState.Submitted } } };
+        var evt2 = new StreamResponse { StatusUpdate = new TaskStatusUpdateEvent { TaskId = "t3", Status = new AgentTaskStatus { State = TaskState.Working } } };
+        var evt3 = new StreamResponse { StatusUpdate = new TaskStatusUpdateEvent { TaskId = "t3", Status = new AgentTaskStatus { State = TaskState.Completed } } };
         enumerator.NotifyEvent(evt1);
         enumerator.NotifyEvent(evt2);
         enumerator.NotifyFinalEvent(evt3);
 
         // Act
-        List<A2AEvent> yielded = [];
+        List<StreamResponse> yielded = [];
         await foreach (var e in enumerator)
         {
             yielded.Add(e);

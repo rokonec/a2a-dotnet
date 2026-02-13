@@ -11,9 +11,9 @@ public class TaskManagerTests
         taskManager.OnMessageReceived = (messageSendParams, _) =>
         {
             messageReceived = messageSendParams.Message.Parts.OfType<TextPart>().First().Text!;
-            return Task.FromResult<A2AResponse>(CreateMessage("Goodbye, World!"));
+            return Task.FromResult(new SendMessageResponse { Message = CreateMessage("Goodbye, World!") });
         };
-        var a2aResponse = await taskManager.SendMessageAsync(taskSendParams) as AgentMessage;
+        var a2aResponse = (await taskManager.SendMessageAsync(taskSendParams))?.Message;
         Assert.NotNull(a2aResponse);
         Assert.Equal("Goodbye, World!", a2aResponse.Parts.OfType<TextPart>().First().Text);
         Assert.Equal("Hello, World!", messageReceived);
@@ -34,21 +34,29 @@ public class TaskManagerTests
 
             return messageReceived switch
             {
-                "I need something fancy." => CreateMessage("OK, but it's going to be very expensive."),
-                "I accept the terms." => await taskManager.CreateTaskAsync(cancellationToken: cancellationToken),
+                "I need something fancy." => new SendMessageResponse { Message = CreateMessage("OK, but it's going to be very expensive.") },
+                "I accept the terms." => new SendMessageResponse { Task = await taskManager.CreateTaskAsync(cancellationToken: cancellationToken) },
                 _ => throw new InvalidOperationException()
             };
         };
 
         if (stream)
         {
-            Assert.IsType<AgentMessage>(await taskManager.SendMessageStreamingAsync(firstMessage).SingleAsync());
-            Assert.IsType<AgentTask>(await taskManager.SendMessageStreamingAsync(secondMessage).SingleAsync());
+            var firstResult = await taskManager.SendMessageStreamingAsync(firstMessage).SingleAsync();
+            Assert.NotNull(firstResult.Message);
+            Assert.IsType<AgentMessage>(firstResult.Message);
+            var secondResult = await taskManager.SendMessageStreamingAsync(secondMessage).SingleAsync();
+            Assert.NotNull(secondResult.Task);
+            Assert.IsType<AgentTask>(secondResult.Task);
         }
         else
         {
-            Assert.IsType<AgentMessage>(await taskManager.SendMessageAsync(firstMessage));
-            Assert.IsType<AgentTask>(await taskManager.SendMessageAsync(secondMessage));
+            var firstResult = await taskManager.SendMessageAsync(firstMessage);
+            Assert.NotNull(firstResult?.Message);
+            Assert.IsType<AgentMessage>(firstResult.Message);
+            var secondResult = await taskManager.SendMessageAsync(secondMessage);
+            Assert.NotNull(secondResult?.Task);
+            Assert.IsType<AgentTask>(secondResult.Task);
         }
     }
 
@@ -57,7 +65,7 @@ public class TaskManagerTests
     {
         var taskManager = new TaskManager();
         var messageSendParams = CreateMessageSendParams("Hello, World!");
-        var task = await taskManager.SendMessageAsync(messageSendParams) as AgentTask;
+        var task = (await taskManager.SendMessageAsync(messageSendParams))?.Task;
         Assert.NotNull(task);
 
         Assert.Equal(TaskState.Submitted, task.Status.State);
@@ -73,7 +81,7 @@ public class TaskManagerTests
     {
         var taskManager = new TaskManager();
         var taskSendParams = CreateMessageSendParams("Hello, World!");
-        var task = await taskManager.SendMessageAsync(taskSendParams) as AgentTask;
+        var task = (await taskManager.SendMessageAsync(taskSendParams))?.Task;
         Assert.NotNull(task);
         Assert.Equal(TaskState.Submitted, task.Status.State);
 
@@ -88,7 +96,7 @@ public class TaskManagerTests
     {
         var taskManager = new TaskManager();
         var taskSendParams = CreateMessageSendParams("Hello, World!");
-        var task = await taskManager.SendMessageAsync(taskSendParams) as AgentTask;
+        var task = (await taskManager.SendMessageAsync(taskSendParams))?.Task;
         Assert.NotNull(task);
         Assert.Equal(TaskState.Submitted, task.Status.State);
 
@@ -116,7 +124,7 @@ public class TaskManagerTests
         };
 
         var taskSendParams = CreateMessageSendParams("Hello, World!");
-        var task = await taskManager.SendMessageAsync(taskSendParams) as AgentTask;
+        var task = (await taskManager.SendMessageAsync(taskSendParams))?.Task;
         Assert.NotNull(task);
         Assert.Equal(TaskState.Submitted, task.Status.State);
 
@@ -133,7 +141,7 @@ public class TaskManagerTests
                 ]
             },
         };
-        var updatedTask = await taskManager.SendMessageAsync(updateSendParams) as AgentTask;
+        var updatedTask = (await taskManager.SendMessageAsync(updateSendParams))?.Task;
         Assert.NotNull(updatedTask);
         Assert.Equal(task.Id, updatedTask.Id);
         Assert.Equal(TaskState.Working, updatedTask.Status.State);
@@ -147,7 +155,7 @@ public class TaskManagerTests
         var taskManager = new TaskManager();
 
         var taskSendParams = CreateMessageSendParams("Hello, World!");
-        var task = await taskManager.SendMessageAsync(taskSendParams) as AgentTask;
+        var task = (await taskManager.SendMessageAsync(taskSendParams))?.Task;
         Assert.NotNull(task);
         Assert.Equal(TaskState.Submitted, task.Status.State);
 
@@ -164,7 +172,7 @@ public class TaskManagerTests
         var taskManager = new TaskManager();
 
         var taskSendParams = CreateMessageSendParams("Write me a poem");
-        var task = await taskManager.SendMessageAsync(taskSendParams) as AgentTask;
+        var task = (await taskManager.SendMessageAsync(taskSendParams))?.Task;
         Assert.NotNull(task);
         Assert.Equal(TaskState.Submitted, task.Status.State);
 
@@ -227,7 +235,8 @@ public class TaskManagerTests
             if (isFirstEvent)
             {
                 Assert.NotNull(taskEvent);
-                Assert.IsType<AgentTask>(taskEvent);
+                Assert.NotNull(taskEvent.Task);
+                Assert.IsType<AgentTask>(taskEvent.Task);
                 isFirstEvent = false;
             }
         }
@@ -241,24 +250,30 @@ public class TaskManagerTests
         var task = Task.Run(async () =>
         {
             await Task.Delay(1000);
-            enumerator.NotifyEvent(new TaskStatusUpdateEvent
+            enumerator.NotifyEvent(new StreamResponse
             {
-                TaskId = "testTask",
-                Status = new AgentTaskStatus
+                StatusUpdate = new TaskStatusUpdateEvent
                 {
-                    State = TaskState.Working,
-                    Timestamp = DateTime.UtcNow
+                    TaskId = "testTask",
+                    Status = new AgentTaskStatus
+                    {
+                        State = TaskState.Working,
+                        Timestamp = DateTime.UtcNow
+                    }
                 }
             });
 
             await Task.Delay(1000);
-            enumerator.NotifyFinalEvent(new TaskStatusUpdateEvent
+            enumerator.NotifyFinalEvent(new StreamResponse
             {
-                TaskId = "testTask",
-                Status = new AgentTaskStatus
+                StatusUpdate = new TaskStatusUpdateEvent
                 {
-                    State = TaskState.Completed,
-                    Timestamp = DateTime.UtcNow
+                    TaskId = "testTask",
+                    Status = new AgentTaskStatus
+                    {
+                        State = TaskState.Completed,
+                        Timestamp = DateTime.UtcNow
+                    }
                 }
             });
         });
@@ -267,7 +282,8 @@ public class TaskManagerTests
         await foreach (var taskEvent in enumerator)
         {
             Assert.NotNull(taskEvent);
-            Assert.IsType<TaskStatusUpdateEvent>(taskEvent);
+            Assert.NotNull(taskEvent.StatusUpdate);
+            Assert.IsType<TaskStatusUpdateEvent>(taskEvent.StatusUpdate);
             eventCount++;
         }
         Assert.Equal(2, eventCount);
@@ -356,7 +372,7 @@ public class TaskManagerTests
             }
         };
 
-        var events = new List<A2AEvent>();
+        var events = new List<StreamResponse>();
         var processorStarted = new TaskCompletionSource();
 
         var processor = Task.Run(async () =>
@@ -384,11 +400,14 @@ public class TaskManagerTests
 
         Assert.Equal(3, events.Count);
 
-        var init = Assert.IsType<AgentTask>(events[0]);
+        var init = events[0].Task;
+        Assert.NotNull(init);
         Assert.Equal("init", init!.History![0].Parts[0].Text);
-        var t = Assert.IsType<TaskStatusUpdateEvent>(events[1]);
+        var t = events[1].StatusUpdate;
+        Assert.NotNull(t);
         Assert.Equal("second", t!.Status.Message!.Parts[0].Text);
-        t = Assert.IsType<TaskStatusUpdateEvent>(events[2]);
+        t = events[2].StatusUpdate;
+        Assert.NotNull(t);
         Assert.Equal("done", t!.Status.Message!.Parts[0].Text);
     }
 
@@ -483,7 +502,7 @@ public class TaskManagerTests
             },
         };
         // Create initial task
-        var task = await taskManager.SendMessageAsync(taskSendParams) as AgentTask;
+        var task = (await taskManager.SendMessageAsync(taskSendParams))?.Task;
         Assert.NotNull(task);
         // Add more messages to history
         for (int i = 2; i <= 5; i++)
@@ -500,7 +519,7 @@ public class TaskManagerTests
             Message = new AgentMessage { TaskId = task.Id, Parts = [new TextPart { Text = "Check" }] },
             Configuration = new() { HistoryLength = 3 }
         };
-        var resultTask = await taskManager.SendMessageAsync(checkParams) as AgentTask;
+        var resultTask = (await taskManager.SendMessageAsync(checkParams))?.Task;
         Assert.NotNull(resultTask);
         Assert.NotNull(resultTask.History);
         Assert.Equal(3, resultTask.History.Count);
@@ -557,19 +576,19 @@ public class TaskManagerTests
         var taskManager = new TaskManager();
 
         // Act & Assert
-        var task = await taskManager.SendMessageAsync(new()
+        var task = (await taskManager.SendMessageAsync(new()
         {
             Message = { Parts = { new TextPart { Text = "hi" } } }
-        }, default) as AgentTask;
+        }, default))?.Task;
         Assert.NotNull(task);
 
-        task = await taskManager.SendMessageAsync(new()
+        task = (await taskManager.SendMessageAsync(new()
         {
             Message = {
                 TaskId = task.Id,
                 Parts = { new TextPart { Text = "hi again" } },
             },
-        }, default) as AgentTask;
+        }, default))?.Task;
         Assert.NotNull(task);
 
         var trimmedTask = await taskManager.GetTaskAsync(new() { HistoryLength = 1, Id = task.Id });
@@ -586,7 +605,7 @@ public class TaskManagerTests
         Assert.Same(task.Artifacts, trimmedTask.Artifacts);
         Assert.Same(task.ContextId, trimmedTask.ContextId);
 
-        var trimmedSentTask = await taskManager.SendMessageAsync(new()
+        var trimmedSentTask = (await taskManager.SendMessageAsync(new()
         {
             Message = {
                 TaskId = task.Id,
@@ -596,7 +615,7 @@ public class TaskManagerTests
             {
                 HistoryLength = 1,
             },
-        }, default) as AgentTask;
+        }, default))?.Task;
         Assert.NotNull(trimmedSentTask);
         Assert.NotNull(trimmedSentTask?.History);
         Assert.Single(trimmedSentTask.History);
@@ -778,7 +797,9 @@ public class TaskManagerTests
         var result = await taskManager.SendMessageAsync(messageSendParams);
 
         // Assert
-        var task = Assert.IsType<AgentTask>(result);
+        Assert.NotNull(result);
+        Assert.NotNull(result.Task);
+        var task = result.Task;
         Assert.NotNull(task.Id);
         Assert.NotEmpty(task.Id);
     }
@@ -798,7 +819,7 @@ public class TaskManagerTests
         };
 
         // Act
-        var events = new List<A2AEvent>();
+        var events = new List<StreamResponse>();
         await foreach (var evt in taskManager.SendMessageStreamingAsync(messageSendParams))
         {
             events.Add(evt);
@@ -807,7 +828,8 @@ public class TaskManagerTests
 
         // Assert
         Assert.Single(events);
-        var task = Assert.IsType<AgentTask>(events[0]);
+        Assert.NotNull(events[0].Task);
+        var task = events[0].Task!;
         Assert.NotNull(task.Id);
         Assert.NotEmpty(task.Id);
     }

@@ -26,7 +26,7 @@ namespace A2A.UnitTests.Models
         }
 
         [Fact]
-        public void MessageSendParams_Serialized_HasKindOnMessage()
+        public void MessageSendParams_Serialized_HasMessageProperty()
         {
             // Arrange
             var msp = new MessageSendParams
@@ -41,7 +41,8 @@ namespace A2A.UnitTests.Models
 
             var serialized = JsonSerializer.Serialize(msp, A2AJsonUtilities.DefaultOptions);
 
-            Assert.Contains("\"kind\":\"message\"", serialized);
+            Assert.Contains("\"message\":", serialized);
+            Assert.Contains("\"messageId\":\"m-8\"", serialized);
         }
 
         [Fact]

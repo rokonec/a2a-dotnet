@@ -4,6 +4,23 @@ using System.Text.Json.Serialization;
 namespace A2A;
 
 /// <summary>
+/// Identifies which content field is set in a <see cref="Part"/>.
+/// </summary>
+public enum PartContentCase
+{
+    /// <summary>No content field is set.</summary>
+    None,
+    /// <summary>The <see cref="Part.Text"/> field is set.</summary>
+    Text,
+    /// <summary>The <see cref="Part.Raw"/> field is set.</summary>
+    Raw,
+    /// <summary>The <see cref="Part.Url"/> field is set.</summary>
+    Url,
+    /// <summary>The <see cref="Part.Data"/> field is set.</summary>
+    Data
+}
+
+/// <summary>
 /// Represents a container for a section of communication content.
 /// Parts can be purely textual, a file (raw bytes or URL), or structured data.
 /// Exactly one of <see cref="Text"/>, <see cref="Raw"/>, <see cref="Url"/>, or <see cref="Data"/> must be set.
@@ -52,6 +69,17 @@ public class Part
     /// </summary>
     [JsonPropertyName("mediaType")]
     public string? MediaType { get; set; }
+
+    /// <summary>
+    /// Identifies which content field is set.
+    /// </summary>
+    [JsonIgnore]
+    public PartContentCase ContentCase =>
+        Text is not null ? PartContentCase.Text :
+        Raw is not null ? PartContentCase.Raw :
+        Url is not null ? PartContentCase.Url :
+        Data is not null ? PartContentCase.Data :
+        PartContentCase.None;
 
     /// <summary>
     /// Creates a text part.

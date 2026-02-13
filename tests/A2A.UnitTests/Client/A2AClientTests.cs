@@ -13,7 +13,7 @@ public class A2AClientTests
         // Arrange
         HttpRequestMessage? capturedRequest = null;
 
-        var sut = CreateA2AClient(new AgentMessage() { MessageId = "id-1", Role = MessageRole.User, Parts = [] }, req => capturedRequest = req);
+        var sut = CreateA2AClient(new SendMessageResponse { Message = new AgentMessage() { MessageId = "id-1", Role = MessageRole.User, Parts = [] } }, req => capturedRequest = req);
 
         var sendParams = new MessageSendParams
         {
@@ -87,12 +87,12 @@ public class A2AClientTests
             ContextId = "ctx-789"
         };
 
-        var sut = CreateA2AClient(expectedMessage);
+        var sut = CreateA2AClient(new SendMessageResponse { Message = expectedMessage });
 
         var sendParams = new MessageSendParams();
 
         // Act
-        var result = await sut.SendMessageAsync(sendParams) as AgentMessage;
+        var result = (await sut.SendMessageAsync(sendParams))?.Message;
 
         // Assert
         Assert.NotNull(result);
@@ -403,7 +403,7 @@ public class A2AClientTests
         // Arrange
         HttpRequestMessage? capturedRequest = null;
 
-        var sut = CreateA2AClient(new AgentMessage() { MessageId = "id-1", Role = MessageRole.User, Parts = [] }, req => capturedRequest = req, isSse: true);
+        var sut = CreateA2AClient(new StreamResponse { Message = new AgentMessage() { MessageId = "id-1", Role = MessageRole.User, Parts = [] } }, req => capturedRequest = req, isSse: true);
 
         var sendParams = new MessageSendParams
         {
@@ -477,12 +477,12 @@ public class A2AClientTests
             ContextId = "ctx-789"
         };
 
-        var sut = CreateA2AClient(expectedMessage, isSse: true);
+        var sut = CreateA2AClient(new StreamResponse { Message = expectedMessage }, isSse: true);
 
         var sendParams = new MessageSendParams();
 
         // Act
-        SseItem<A2AEvent>? result = null;
+        SseItem<StreamResponse>? result = null;
         await foreach (var item in sut.SendMessageStreamingAsync(sendParams))
         {
             result = item;
@@ -491,7 +491,8 @@ public class A2AClientTests
 
         // Assert
         Assert.NotNull(result);
-        var message = Assert.IsType<AgentMessage>(result.Value.Data);
+        var message = result.Value.Data.Message;
+        Assert.NotNull(message);
         Assert.Equal(expectedMessage.Role, message.Role);
         Assert.Equal(expectedMessage.Parts.Count, message.Parts.Count);
         Assert.NotNull(message.Parts[0].Text);
@@ -511,7 +512,7 @@ public class A2AClientTests
         // Arrange
         HttpRequestMessage? capturedRequest = null;
 
-        var sut = CreateA2AClient(new AgentMessage() { MessageId = "id-1", Role = MessageRole.User, Parts = [] }, req => capturedRequest = req, isSse: true);
+        var sut = CreateA2AClient(new StreamResponse { Message = new AgentMessage() { MessageId = "id-1", Role = MessageRole.User, Parts = [] } }, req => capturedRequest = req, isSse: true);
 
         var taskId = "task-123";
 
@@ -552,10 +553,10 @@ public class A2AClientTests
             ContextId = "ctx-789"
         };
 
-        var sut = CreateA2AClient(expectedMessage, isSse: true);
+        var sut = CreateA2AClient(new StreamResponse { Message = expectedMessage }, isSse: true);
 
         // Act
-        SseItem<A2AEvent>? result = null;
+        SseItem<StreamResponse>? result = null;
         await foreach (var item in sut.SubscribeToTaskAsync("task-123"))
         {
             result = item;
@@ -564,7 +565,8 @@ public class A2AClientTests
 
         // Assert
         Assert.NotNull(result);
-        var message = Assert.IsType<AgentMessage>(result.Value.Data);
+        var message = result.Value.Data.Message;
+        Assert.NotNull(message);
         Assert.Equal(expectedMessage.Role, message.Role);
         Assert.Equal(expectedMessage.Parts.Count, message.Parts.Count);
         Assert.NotNull(message.Parts[0].Text);

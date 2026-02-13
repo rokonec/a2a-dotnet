@@ -250,8 +250,10 @@ public class A2AJsonRpcProcessorTests
         Assert.Equal("application/json", ContentType);
 
         Assert.NotNull(BodyContent.Result);
-        var agentTask = JsonSerializer.Deserialize<AgentTask>(BodyContent.Result, A2AJsonUtilities.DefaultOptions);
+        var sendMessageResponse = JsonSerializer.Deserialize<SendMessageResponse>(BodyContent.Result, A2AJsonUtilities.DefaultOptions);
 
+        Assert.NotNull(sendMessageResponse);
+        var agentTask = sendMessageResponse.Task;
         Assert.NotNull(agentTask);
         Assert.Equal(TaskState.Submitted, agentTask.Status.State);
         Assert.NotEmpty(agentTask.History);

@@ -105,13 +105,13 @@ internal static class A2AHttpProcessor
     internal static Task<IResult> SendMessageAsync(ITaskManager taskManager, ILogger logger, MessageSendParams sendParams, CancellationToken cancellationToken)
         => WithExceptionHandlingAsync(logger, "SendMessage", async ct =>
         {
-            var a2aResponse = await taskManager.SendMessageAsync(sendParams, ct).ConfigureAwait(false);
-            if (a2aResponse == null)
+            var SendMessageResponse = await taskManager.SendMessageAsync(sendParams, ct).ConfigureAwait(false);
+            if (SendMessageResponse == null)
             {
                 return Results.NotFound();
             }
 
-            return new A2AResponseResult(a2aResponse);
+            return new A2AResponseResult(SendMessageResponse);
         }, cancellationToken: cancellationToken);
 
     /// <summary>
@@ -362,24 +362,33 @@ internal static class A2AHttpProcessor
 /// Result type for returning A2A responses as JSON in HTTP responses.
 /// </summary>
 /// <remarks>
-/// Implements IResult to provide custom serialization of A2AResponse objects
+/// Implements IResult to provide custom serialization of SendMessageResponse objects
 /// using the configured JSON serialization options.
 /// </remarks>
 public class A2AResponseResult : IResult
 {
-    private readonly A2AResponse a2aResponse;
+    private readonly object _response;
 
     /// <summary>
     /// Initializes a new instance of the A2AResponseResult class.
     /// </summary>
-    /// <param name="a2aResponse">The A2A response object to serialize and return in the HTTP response.</param>
-    public A2AResponseResult(A2AResponse a2aResponse)
+    /// <param name="response">The response object (SendMessageResponse or AgentTask) to serialize and return in the HTTP response.</param>
+    public A2AResponseResult(SendMessageResponse response)
     {
-        this.a2aResponse = a2aResponse;
+        _response = response;
     }
 
     /// <summary>
-    /// Executes the result by serializing the A2A response as JSON to the HTTP response body.
+    /// Initializes a new instance of the A2AResponseResult class from an AgentTask.
+    /// </summary>
+    /// <param name="task">The AgentTask to serialize and return in the HTTP response.</param>
+    public A2AResponseResult(AgentTask task)
+    {
+        _response = task;
+    }
+
+    /// <summary>
+    /// Executes the result by serializing the response as JSON to the HTTP response body.
     /// </summary>
     /// <remarks>
     /// Sets the appropriate content type and uses the default A2A JSON serialization options.
@@ -390,7 +399,7 @@ public class A2AResponseResult : IResult
     {
         httpContext.Response.ContentType = "application/json";
 
-        await JsonSerializer.SerializeAsync(httpContext.Response.Body, a2aResponse, A2AJsonUtilities.DefaultOptions.GetTypeInfo(typeof(A2AResponse))).ConfigureAwait(false);
+        await JsonSerializer.SerializeAsync(httpContext.Response.Body, _response, A2AJsonUtilities.DefaultOptions.GetTypeInfo(_response.GetType())).ConfigureAwait(false);
     }
 }
 
@@ -403,9 +412,9 @@ public class A2AResponseResult : IResult
 /// </remarks>
 internal sealed class A2AEventStreamResult : IResult
 {
-    private readonly IAsyncEnumerable<A2AEvent> taskEvents;
+    private readonly IAsyncEnumerable<StreamResponse> taskEvents;
 
-    internal A2AEventStreamResult(IAsyncEnumerable<A2AEvent> taskEvents)
+    internal A2AEventStreamResult(IAsyncEnumerable<StreamResponse> taskEvents)
     {
         ArgumentNullException.ThrowIfNull(taskEvents);
 
@@ -441,7 +450,7 @@ internal sealed class A2AEventStreamResult : IResult
         {
             await foreach (var taskEvent in taskEvents)
             {
-                var json = JsonSerializer.Serialize(taskEvent, A2AJsonUtilities.DefaultOptions.GetTypeInfo(typeof(A2AEvent)));
+                var json = JsonSerializer.Serialize(taskEvent, A2AJsonUtilities.DefaultOptions.GetTypeInfo(typeof(StreamResponse)));
                 await httpContext.Response.BodyWriter.WriteAsync(Encoding.UTF8.GetBytes($"data: {json}\n\n"), httpContext.RequestAborted).ConfigureAwait(false);
                 await httpContext.Response.BodyWriter.FlushAsync(httpContext.RequestAborted).ConfigureAwait(false);
             }

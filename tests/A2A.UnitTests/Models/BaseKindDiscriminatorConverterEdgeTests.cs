@@ -23,15 +23,16 @@ public sealed class BaseKindDiscriminatorConverterEdgeTests
     }
 
     [Fact]
-    public void A2AEvent_Deserialize_Kind_Index_Zero_Null_Mapping_ThrowsUnknownKind()
+    public void StreamResponse_Deserialize_Empty_ReturnsNoneCase()
     {
-        // Arrange: A2AEventKind.Unknown maps to index 0 which is null in the mapping
-        const string json = "{ \"kind\": \"unknown\" }";
+        // Arrange: An empty object should deserialize to StreamResponse with no payload
+        const string json = "{}";
 
         // Act
-        var ex = Assert.Throws<A2AException>(() => JsonSerializer.Deserialize<A2AEvent>(json, A2AJsonUtilities.DefaultOptions));
+        var result = JsonSerializer.Deserialize<StreamResponse>(json, A2AJsonUtilities.DefaultOptions);
 
         // Assert
-        Assert.Equal(A2AErrorCode.InvalidRequest, ex.ErrorCode);
+        Assert.NotNull(result);
+        Assert.Equal(StreamResponseCase.None, result.PayloadCase);
     }
 }

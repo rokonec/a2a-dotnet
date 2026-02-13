@@ -81,7 +81,7 @@ internal sealed class TaskBasedCommunicationSample
         };
 
         Console.WriteLine($" Sending message to the agent: {((TextPart)userMessage.Parts[0]).Text}");
-        AgentTask agentResponse = (AgentTask)await agentClient.SendMessageAsync(new MessageSendParams { Message = userMessage });
+        AgentTask agentResponse = (await agentClient.SendMessageAsync(new MessageSendParams { Message = userMessage })).Task!;
         DisplayTaskDetails(agentResponse);
     }
 
@@ -106,7 +106,7 @@ internal sealed class TaskBasedCommunicationSample
 
         // 1. Create a new task by sending the message to the agent
         Console.WriteLine($" Sending message to the agent: {((TextPart)userMessage.Parts[0]).Text}");
-        AgentTask agentResponse = (AgentTask)await agentClient.SendMessageAsync(new MessageSendParams { Message = userMessage });
+        AgentTask agentResponse = (await agentClient.SendMessageAsync(new MessageSendParams { Message = userMessage })).Task!;
         DisplayTaskDetails(agentResponse);
 
         // 2. Retrieve the task

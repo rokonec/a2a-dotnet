@@ -10,7 +10,7 @@ namespace A2A;
 public static class A2AClientExtensions
 {
     /// <inheritdoc cref="A2AClient.SendMessageAsync(MessageSendParams, CancellationToken)"/>
-    public static Task<A2AResponse> SendMessageAsync(
+    public static Task<SendMessageResponse> SendMessageAsync(
         this A2AClient client,
         AgentMessage message,
         MessageSendConfiguration? configuration = null,
@@ -107,7 +107,7 @@ public static class A2AClientExtensions
     }
 
     /// <inheritdoc cref="A2AClient.SendMessageStreamingAsync(MessageSendParams, CancellationToken)"/>
-    public static IAsyncEnumerable<SseItem<A2AEvent>> SendMessageStreamingAsync(
+    public static IAsyncEnumerable<SseItem<StreamResponse>> SendMessageStreamingAsync(
         this A2AClient client,
         AgentMessage message,
         MessageSendConfiguration? configuration = null,

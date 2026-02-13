@@ -13,7 +13,7 @@ public interface IA2AClient
     /// <param name="taskSendParams">The message parameters containing the message and configuration.</param>
     /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
     /// <returns>The agent's response containing a Task or Message.</returns>
-    Task<A2AResponse> SendMessageAsync(MessageSendParams taskSendParams, CancellationToken cancellationToken = default);
+    Task<SendMessageResponse> SendMessageAsync(MessageSendParams taskSendParams, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Retrieves the current state and history of a specific task.
@@ -40,7 +40,7 @@ public interface IA2AClient
     /// <param name="taskSendParams">The message parameters containing the message and configuration.</param>
     /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
     /// <returns>An async enumerable of server-sent events containing Task, Message, TaskStatusUpdateEvent, or TaskArtifactUpdateEvent.</returns>
-    IAsyncEnumerable<SseItem<A2AEvent>> SendMessageStreamingAsync(MessageSendParams taskSendParams, CancellationToken cancellationToken = default);
+    IAsyncEnumerable<SseItem<StreamResponse>> SendMessageStreamingAsync(MessageSendParams taskSendParams, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Subscribes to a task's event stream to receive ongoing updates.
@@ -48,7 +48,7 @@ public interface IA2AClient
     /// <param name="taskId">The ID of the task to subscribe to.</param>
     /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
     /// <returns>An async enumerable of server-sent events containing task updates.</returns>
-    IAsyncEnumerable<SseItem<A2AEvent>> SubscribeToTaskAsync(string taskId, CancellationToken cancellationToken = default);
+    IAsyncEnumerable<SseItem<StreamResponse>> SubscribeToTaskAsync(string taskId, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Sets or updates the push notification configuration for a specific task.
