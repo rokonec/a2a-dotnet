@@ -34,6 +34,15 @@ public static class A2AJsonRpcProcessor
     {
         using var activity = ActivitySource.StartActivity("HandleA2ARequest", ActivityKind.Server);
 
+        // Check A2A-Version header (empty = 0.3 per spec, "1.0" = v1.0)
+        var version = request.Headers["A2A-Version"].FirstOrDefault();
+        if (!string.IsNullOrEmpty(version) && version != "1.0" && version != "0.3")
+        {
+            return new JsonRpcResponseResult(JsonRpcResponse.CreateJsonRpcErrorResponse(
+                new JsonRpcId((string?)null),
+                new A2AException($"Protocol version '{version}' is not supported. Supported versions: 0.3, 1.0", A2AErrorCode.VersionNotSupported)));
+        }
+
         JsonRpcRequest? rpcRequest = null;
 
         try
