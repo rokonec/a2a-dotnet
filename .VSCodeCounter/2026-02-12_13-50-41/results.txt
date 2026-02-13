@@ -1,0 +1,242 @@
+Date : 2026-02-12 13:50:41
+Directory : e:\dev\a2a-dotnet
+Total : 163 files,  16478 codes, 3426 comments, 2956 blanks, all 22860 lines
+
+Languages
++----------+------------+------------+------------+------------+------------+
+| language | files      | code       | comment    | blank      | total      |
++----------+------------+------------+------------+------------+------------+
+| C#       |        118 |      9,107 |      3,177 |      1,926 |     14,210 |
+| Markdown |         10 |      3,237 |          0 |        819 |      4,056 |
+| JSON     |          8 |      2,161 |          0 |          5 |      2,166 |
+| YAML     |          7 |      1,291 |         35 |         64 |      1,390 |
+| Http     |          7 |        356 |        202 |         80 |        638 |
+| XML      |         13 |        326 |         12 |         62 |        400 |
++----------+------------+------------+------------+------------+------------+
+
+Directories
++--------------------------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| path                                                                                                         | files      | code       | comment    | blank      | total      |
++--------------------------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| .                                                                                                            |        163 |     16,478 |      3,426 |      2,956 |     22,860 |
+| . (Files)                                                                                                    |          7 |      1,004 |         14 |        243 |      1,261 |
+| .github                                                                                                      |          7 |        377 |         26 |         95 |        498 |
+| .github (Files)                                                                                              |          2 |        116 |          0 |         35 |        151 |
+| .github\workflows                                                                                            |          5 |        261 |         26 |         60 |        347 |
+| docs                                                                                                         |          2 |        497 |          0 |        176 |        673 |
+| samples                                                                                                      |         33 |      1,856 |        457 |        382 |      2,695 |
+| samples\A2ACli                                                                                               |          3 |        259 |         23 |         38 |        320 |
+| samples\A2ACli (Files)                                                                                       |          1 |         18 |          0 |          5 |         23 |
+| samples\A2ACli\Host                                                                                          |          1 |        233 |         23 |         33 |        289 |
+| samples\A2ACli\Properties                                                                                    |          1 |          8 |          0 |          0 |          8 |
+| samples\AgentClient                                                                                          |          7 |        315 |        166 |         96 |        577 |
+| samples\AgentClient (Files)                                                                                  |          4 |        196 |          7 |         58 |        261 |
+| samples\AgentClient\Samples                                                                                  |          3 |        119 |        159 |         38 |        316 |
+| samples\AgentServer                                                                                          |         16 |        925 |        225 |        185 |      1,335 |
+| samples\AgentServer (Files)                                                                                  |          9 |        528 |         25 |        108 |        661 |
+| samples\AgentServer\Properties                                                                               |          1 |         63 |          0 |          1 |         64 |
+| samples\AgentServer\http-tests                                                                               |          6 |        334 |        200 |         76 |        610 |
+| samples\SemanticKernelAgent                                                                                  |          7 |        357 |         43 |         63 |        463 |
+| samples\SemanticKernelAgent (Files)                                                                          |          6 |        347 |         43 |         63 |        453 |
+| samples\SemanticKernelAgent\properties                                                                       |          1 |         10 |          0 |          0 |         10 |
+| src                                                                                                          |         76 |      4,084 |      2,186 |        762 |      7,032 |
+| src (Files)                                                                                                  |          2 |         31 |          0 |          6 |         37 |
+| src\A2A                                                                                                      |         66 |      3,471 |      1,879 |        633 |      5,983 |
+| src\A2A (Files)                                                                                              |         11 |      1,322 |        239 |         90 |      1,651 |
+| src\A2A.AspNetCore                                                                                           |          8 |        582 |        307 |        123 |      1,012 |
+| src\A2A.AspNetCore (Files)                                                                                   |          7 |        482 |        297 |        112 |        891 |
+| src\A2A.AspNetCore\Caching                                                                                   |          1 |        100 |         10 |         11 |        121 |
+| src\A2A\Client                                                                                               |          5 |        380 |        107 |         74 |        561 |
+| src\A2A\Extensions                                                                                           |          2 |        158 |         37 |         26 |        221 |
+| src\A2A\JsonRpc                                                                                              |          7 |        381 |        293 |         84 |        758 |
+| src\A2A\Models                                                                                               |         32 |        682 |        848 |        214 |      1,744 |
+| src\A2A\Polyfills                                                                                            |          4 |         42 |         85 |         19 |        146 |
+| src\A2A\Polyfills\System                                                                                     |          4 |         42 |         85 |         19 |        146 |
+| src\A2A\Polyfills\System\Diagnostics                                                                         |          1 |         18 |         60 |          8 |         86 |
+| src\A2A\Polyfills\System\Diagnostics\CodeAnalysis                                                            |          1 |         18 |         60 |          8 |         86 |
+| src\A2A\Polyfills\System\Runtime                                                                             |          3 |         24 |         25 |         11 |         60 |
+| src\A2A\Polyfills\System\Runtime\CompilerServices                                                            |          3 |         24 |         25 |         11 |         60 |
+| src\A2A\Server                                                                                               |          5 |        506 |        270 |        126 |        902 |
+| tests                                                                                                        |         38 |      8,660 |        743 |      1,298 |     10,701 |
+| tests\A2A.AspNetCore.UnitTests                                                                               |         10 |      4,584 |        250 |        553 |      5,387 |
+| tests\A2A.AspNetCore.UnitTests (Files)                                                                       |          9 |      4,582 |        250 |        552 |      5,384 |
+| tests\A2A.AspNetCore.UnitTests\Properties                                                                    |          1 |          2 |          0 |          1 |          3 |
+| tests\A2A.UnitTests                                                                                          |         28 |      4,076 |        493 |        745 |      5,314 |
+| tests\A2A.UnitTests (Files)                                                                                  |          3 |        174 |         19 |         25 |        218 |
+| tests\A2A.UnitTests\Client                                                                                   |          3 |        617 |         69 |        135 |        821 |
+| tests\A2A.UnitTests\GitHubIssues                                                                             |          1 |        109 |          0 |          6 |        115 |
+| tests\A2A.UnitTests\JsonRpc                                                                                  |          6 |        705 |        119 |        158 |        982 |
+| tests\A2A.UnitTests\Models                                                                                   |         11 |      1,569 |        172 |        236 |      1,977 |
+| tests\A2A.UnitTests\Properties                                                                               |          1 |          2 |          0 |          1 |          3 |
+| tests\A2A.UnitTests\Server                                                                                   |          3 |        900 |        114 |        184 |      1,198 |
++--------------------------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+
+Files
++--------------------------------------------------------------------------------------------------------------+----------+------------+------------+------------+------------+
+| filename                                                                                                     | language | code       | comment    | blank      | total      |
++--------------------------------------------------------------------------------------------------------------+----------+------------+------------+------------+------------+
+| e:\dev\a2a-dotnet\.github\copilot-instructions.md                                                            | Markdown |         99 |          0 |         34 |        133 |
+| e:\dev\a2a-dotnet\.github\dependabot.yml                                                                     | YAML     |         17 |          0 |          1 |         18 |
+| e:\dev\a2a-dotnet\.github\workflows\conventional-commits.yml                                                 | YAML     |         23 |          0 |          4 |         27 |
+| e:\dev\a2a-dotnet\.github\workflows\copilot-setup-steps.yml                                                  | YAML     |         21 |          8 |          6 |         35 |
+| e:\dev\a2a-dotnet\.github\workflows\dotnet-build.yml                                                         | YAML     |         49 |          2 |          3 |         54 |
+| e:\dev\a2a-dotnet\.github\workflows\release.md                                                               | Markdown |         30 |          0 |          8 |         38 |
+| e:\dev\a2a-dotnet\.github\workflows\release.yaml                                                             | YAML     |        138 |         16 |         39 |        193 |
+| e:\dev\a2a-dotnet\A2A-V1.0-MIGRATION-ANALYSIS.md                                                             | Markdown |        729 |          0 |        180 |        909 |
+| e:\dev\a2a-dotnet\A2A.slnx                                                                                   | XML      |         35 |          0 |          1 |         36 |
+| e:\dev\a2a-dotnet\Directory.Build.props                                                                      | XML      |         15 |          0 |          2 |         17 |
+| e:\dev\a2a-dotnet\Directory.Packages.props                                                                   | XML      |         45 |          6 |          0 |         51 |
+| e:\dev\a2a-dotnet\README.md                                                                                  | Markdown |        154 |          0 |         54 |        208 |
+| e:\dev\a2a-dotnet\copilot-setup-steps.yml                                                                    | YAML     |         21 |          8 |          6 |         35 |
+| e:\dev\a2a-dotnet\docs\TaskManager-Callback-Guide.md                                                         | Markdown |        155 |          0 |         52 |        207 |
+| e:\dev\a2a-dotnet\docs\a2a-dotnet-threat-model.md                                                            | Markdown |        342 |          0 |        124 |        466 |
+| e:\dev\a2a-dotnet\global.json                                                                                | JSON     |          5 |          0 |          0 |          5 |
+| e:\dev\a2a-dotnet\samples\A2ACli\A2ACli.csproj                                                               | XML      |         18 |          0 |          5 |         23 |
+| e:\dev\a2a-dotnet\samples\A2ACli\Host\A2ACli.cs                                                              | C#       |        233 |         23 |         33 |        289 |
+| e:\dev\a2a-dotnet\samples\A2ACli\Properties\launchSettings.json                                              | JSON     |          8 |          0 |          0 |          8 |
+| e:\dev\a2a-dotnet\samples\AgentClient\AgentClient.csproj                                                     | XML      |         12 |          0 |          4 |         16 |
+| e:\dev\a2a-dotnet\samples\AgentClient\AgentServerUtils.cs                                                    | C#       |         95 |          7 |         18 |        120 |
+| e:\dev\a2a-dotnet\samples\AgentClient\Program.cs                                                             | C#       |         18 |          0 |          5 |         23 |
+| e:\dev\a2a-dotnet\samples\AgentClient\README.md                                                              | Markdown |         71 |          0 |         31 |        102 |
+| e:\dev\a2a-dotnet\samples\AgentClient\Samples\GetAgentDetailsSample.cs                                       | C#       |         18 |         43 |          7 |         68 |
+| e:\dev\a2a-dotnet\samples\AgentClient\Samples\MessageBasedCommunicationSample.cs                             | C#       |         44 |         59 |         14 |        117 |
+| e:\dev\a2a-dotnet\samples\AgentClient\Samples\TaskBasedCommunicationSample.cs                                | C#       |         57 |         57 |         17 |        131 |
+| e:\dev\a2a-dotnet\samples\AgentServer\AgentServer.csproj                                                     | XML      |         17 |          0 |          5 |         22 |
+| e:\dev\a2a-dotnet\samples\AgentServer\EchoAgent.cs                                                           | C#       |         51 |          2 |          9 |         62 |
+| e:\dev\a2a-dotnet\samples\AgentServer\EchoAgentWithTasks.cs                                                  | C#       |         66 |          3 |         13 |         82 |
+| e:\dev\a2a-dotnet\samples\AgentServer\Program.cs                                                             | C#       |         72 |          6 |         15 |         93 |
+| e:\dev\a2a-dotnet\samples\AgentServer\Properties\launchSettings.json                                         | JSON     |         63 |          0 |          1 |         64 |
+| e:\dev\a2a-dotnet\samples\AgentServer\README.md                                                              | Markdown |        109 |          0 |         35 |        144 |
+| e:\dev\a2a-dotnet\samples\AgentServer\ResearcherAgent.cs                                                     | C#       |        142 |          9 |         20 |        171 |
+| e:\dev\a2a-dotnet\samples\AgentServer\SpecComplianceAgent.cs                                                 | C#       |         54 |          5 |          9 |         68 |
+| e:\dev\a2a-dotnet\samples\AgentServer\appsettings.Development.json                                           | JSON     |          8 |          0 |          1 |          9 |
+| e:\dev\a2a-dotnet\samples\AgentServer\appsettings.json                                                       | JSON     |          9 |          0 |          1 |         10 |
+| e:\dev\a2a-dotnet\samples\AgentServer\http-tests\agent-card.http                                             | Http     |          3 |         24 |          8 |         35 |
+| e:\dev\a2a-dotnet\samples\AgentServer\http-tests\message-send.http                                           | Http     |         71 |         32 |         12 |        115 |
+| e:\dev\a2a-dotnet\samples\AgentServer\http-tests\message-stream.http                                         | Http     |         56 |         28 |         10 |         94 |
+| e:\dev\a2a-dotnet\samples\AgentServer\http-tests\push-notifications.http                                     | Http     |        102 |         57 |         25 |        184 |
+| e:\dev\a2a-dotnet\samples\AgentServer\http-tests\researcher-agent.http                                       | Http     |         55 |         25 |          9 |         89 |
+| e:\dev\a2a-dotnet\samples\AgentServer\http-tests\task-management.http                                        | Http     |         47 |         34 |         12 |         93 |
+| e:\dev\a2a-dotnet\samples\SemanticKernelAgent\Program.cs                                                     | C#       |         36 |          0 |          5 |         41 |
+| e:\dev\a2a-dotnet\samples\SemanticKernelAgent\README.md                                                      | Markdown |         32 |          0 |          8 |         40 |
+| e:\dev\a2a-dotnet\samples\SemanticKernelAgent\SemanticKernelAgent.csproj                                     | XML      |         27 |          0 |          6 |         33 |
+| e:\dev\a2a-dotnet\samples\SemanticKernelAgent\SemanticKernelAgent.http                                       | Http     |         22 |          2 |          4 |         28 |
+| e:\dev\a2a-dotnet\samples\SemanticKernelAgent\SemanticKernelTravelAgent.cs                                   | C#       |        217 |         41 |         40 |        298 |
+| e:\dev\a2a-dotnet\samples\SemanticKernelAgent\appSettings-sample.Development.json                            | JSON     |         13 |          0 |          0 |         13 |
+| e:\dev\a2a-dotnet\samples\SemanticKernelAgent\properties\launchsettings.json                                 | JSON     |         10 |          0 |          0 |         10 |
+| e:\dev\a2a-dotnet\src\A2A.AspNetCore\A2A.AspNetCore.csproj                                                   | XML      |         32 |          1 |          8 |         41 |
+| e:\dev\a2a-dotnet\src\A2A.AspNetCore\A2AEndpointRouteBuilderExtensions.cs                                    | C#       |         62 |         35 |         24 |        121 |
+| e:\dev\a2a-dotnet\src\A2A.AspNetCore\A2AHttpProcessor.cs                                                     | C#       |        193 |        171 |         43 |        407 |
+| e:\dev\a2a-dotnet\src\A2A.AspNetCore\A2AJsonRpcProcessor.cs                                                  | C#       |        129 |         49 |         19 |        197 |
+| e:\dev\a2a-dotnet\src\A2A.AspNetCore\Caching\DistributedCacheTaskStore.cs                                    | C#       |        100 |         10 |         11 |        121 |
+| e:\dev\a2a-dotnet\src\A2A.AspNetCore\JsonRpcResponseResult.cs                                                | C#       |         19 |         20 |          7 |         46 |
+| e:\dev\a2a-dotnet\src\A2A.AspNetCore\JsonRpcStreamedResult.cs                                                | C#       |         33 |         21 |          7 |         61 |
+| e:\dev\a2a-dotnet\src\A2A.AspNetCore\Log.cs                                                                  | C#       |         14 |          0 |          4 |         18 |
+| e:\dev\a2a-dotnet\src\A2ALibs.slnx                                                                           | XML      |         12 |          0 |          1 |         13 |
+| e:\dev\a2a-dotnet\src\A2A\A2A.csproj                                                                         | XML      |         38 |          4 |          9 |         51 |
+| e:\dev\a2a-dotnet\src\A2A\A2AErrorCode.cs                                                                    | C#       |         14 |         33 |         10 |         57 |
+| e:\dev\a2a-dotnet\src\A2A\A2AException.cs                                                                    | C#       |         21 |         51 |          6 |         78 |
+| e:\dev\a2a-dotnet\src\A2A\A2AExceptionExtensions.cs                                                          | C#       |         37 |         38 |         10 |         85 |
+| e:\dev\a2a-dotnet\src\A2A\A2AJsonConverter.cs                                                                | C#       |         59 |         58 |         12 |        129 |
+| e:\dev\a2a-dotnet\src\A2A\A2AJsonUtilities.cs                                                                | C#       |         45 |         27 |         11 |         83 |
+| e:\dev\a2a-dotnet\src\A2A\BaseKindDiscriminatorConverter.cs                                                  | C#       |         59 |         19 |         16 |         94 |
+| e:\dev\a2a-dotnet\src\A2A\Client\A2ACardResolver.cs                                                          | C#       |         64 |         15 |         15 |         94 |
+| e:\dev\a2a-dotnet\src\A2A\Client\A2AClient.cs                                                                | C#       |        159 |         15 |         28 |        202 |
+| e:\dev\a2a-dotnet\src\A2A\Client\A2AClientExtensions.cs                                                      | C#       |        111 |          9 |         13 |        133 |
+| e:\dev\a2a-dotnet\src\A2A\Client\IA2AClient.cs                                                               | C#       |         12 |         48 |          9 |         69 |
+| e:\dev\a2a-dotnet\src\A2A\Client\JsonRpcContent.cs                                                           | C#       |         34 |         20 |          9 |         63 |
+| e:\dev\a2a-dotnet\src\A2A\Extensions\AIContentExtensions.cs                                                  | C#       |        138 |         28 |         24 |        190 |
+| e:\dev\a2a-dotnet\src\A2A\Extensions\AgentTaskExtensions.cs                                                  | C#       |         20 |          9 |          2 |         31 |
+| e:\dev\a2a-dotnet\src\A2A\GlobalSuppressions.cs                                                              | C#       |          3 |          4 |          3 |         10 |
+| e:\dev\a2a-dotnet\src\A2A\JsonRpc\A2AMethods.cs                                                              | C#       |         13 |         34 |          9 |         56 |
+| e:\dev\a2a-dotnet\src\A2A\JsonRpc\JsonRpcError.cs                                                            | C#       |         18 |         23 |          6 |         47 |
+| e:\dev\a2a-dotnet\src\A2A\JsonRpc\JsonRpcId.cs                                                               | C#       |         65 |         84 |         21 |        170 |
+| e:\dev\a2a-dotnet\src\A2A\JsonRpc\JsonRpcRequest.cs                                                          | C#       |         15 |         23 |          6 |         44 |
+| e:\dev\a2a-dotnet\src\A2A\JsonRpc\JsonRpcRequestConverter.cs                                                 | C#       |        134 |         31 |         23 |        188 |
+| e:\dev\a2a-dotnet\src\A2A\JsonRpc\JsonRpcResponse.cs                                                         | C#       |        127 |         92 |         18 |        237 |
+| e:\dev\a2a-dotnet\src\A2A\JsonRpc\MethodNotFoundError.cs                                                     | C#       |          9 |          6 |          1 |         16 |
+| e:\dev\a2a-dotnet\src\A2A\KebabCaseLowerJsonStringEnumConverter.cs                                           | C#       |          8 |          4 |          3 |         15 |
+| e:\dev\a2a-dotnet\src\A2A\Log.cs                                                                             | C#       |         16 |          0 |          5 |         21 |
+| e:\dev\a2a-dotnet\src\A2A\Models\A2AEventKind.cs                                                             | C#       |          8 |         22 |          4 |         34 |
+| e:\dev\a2a-dotnet\src\A2A\Models\A2AResponse.cs                                                              | C#       |         27 |         17 |          6 |         50 |
+| e:\dev\a2a-dotnet\src\A2A\Models\AgentCapabilities.cs                                                        | C#       |         13 |         15 |          6 |         34 |
+| e:\dev\a2a-dotnet\src\A2A\Models\AgentCard.cs                                                                | C#       |         51 |         83 |         20 |        154 |
+| e:\dev\a2a-dotnet\src\A2A\Models\AgentCardSignature.cs                                                       | C#       |         13 |         14 |          4 |         31 |
+| e:\dev\a2a-dotnet\src\A2A\Models\AgentExtension.cs                                                           | C#       |         15 |         15 |          6 |         36 |
+| e:\dev\a2a-dotnet\src\A2A\Models\AgentInterface.cs                                                           | C#       |         11 |         13 |          3 |         27 |
+| e:\dev\a2a-dotnet\src\A2A\Models\AgentMessage.cs                                                             | C#       |         31 |         36 |         10 |         77 |
+| e:\dev\a2a-dotnet\src\A2A\Models\AgentProvider.cs                                                            | C#       |         11 |          9 |          4 |         24 |
+| e:\dev\a2a-dotnet\src\A2A\Models\AgentSkill.cs                                                               | C#       |         25 |         41 |         10 |         76 |
+| e:\dev\a2a-dotnet\src\A2A\Models\AgentTask.cs                                                                | C#       |         21 |         21 |          8 |         50 |
+| e:\dev\a2a-dotnet\src\A2A\Models\AgentTaskStatus.cs                                                          | C#       |         12 |         15 |          4 |         31 |
+| e:\dev\a2a-dotnet\src\A2A\Models\AgentTransport.cs                                                           | C#       |         47 |         59 |         15 |        121 |
+| e:\dev\a2a-dotnet\src\A2A\Models\Artifact.cs                                                                 | C#       |         20 |         21 |          7 |         48 |
+| e:\dev\a2a-dotnet\src\A2A\Models\DataPart.cs                                                                 | C#       |          9 |          6 |          2 |         17 |
+| e:\dev\a2a-dotnet\src\A2A\Models\FileContent.cs                                                              | C#       |         67 |         35 |         18 |        120 |
+| e:\dev\a2a-dotnet\src\A2A\Models\FilePart.cs                                                                 | C#       |          8 |          6 |          2 |         16 |
+| e:\dev\a2a-dotnet\src\A2A\Models\GetTaskPushNotificationConfigParams.cs                                      | C#       |         13 |         12 |          5 |         30 |
+| e:\dev\a2a-dotnet\src\A2A\Models\MessageSendParams.cs                                                        | C#       |         24 |         30 |          9 |         63 |
+| e:\dev\a2a-dotnet\src\A2A\Models\Part.cs                                                                     | C#       |         33 |         28 |          7 |         68 |
+| e:\dev\a2a-dotnet\src\A2A\Models\PartKind.cs                                                                 | C#       |          7 |         18 |          3 |         28 |
+| e:\dev\a2a-dotnet\src\A2A\Models\PushNotificationAuthenticationInfo.cs                                       | C#       |         10 |          9 |          3 |         22 |
+| e:\dev\a2a-dotnet\src\A2A\Models\PushNotificationConfig.cs                                                   | C#       |         14 |         15 |          5 |         34 |
+| e:\dev\a2a-dotnet\src\A2A\Models\SecurityScheme.cs                                                           | C#       |        106 |        214 |         21 |        341 |
+| e:\dev\a2a-dotnet\src\A2A\Models\TaskArtifactUpdateEvent.cs                                                  | C#       |         11 |         12 |          4 |         27 |
+| e:\dev\a2a-dotnet\src\A2A\Models\TaskIdParams.cs                                                             | C#       |         11 |          9 |          3 |         23 |
+| e:\dev\a2a-dotnet\src\A2A\Models\TaskPushNotificationConfig.cs                                               | C#       |         11 |          9 |          3 |         23 |
+| e:\dev\a2a-dotnet\src\A2A\Models\TaskQueryParams.cs                                                          | C#       |          7 |          6 |          2 |         15 |
+| e:\dev\a2a-dotnet\src\A2A\Models\TaskState.cs                                                                | C#       |         15 |         30 |         10 |         55 |
+| e:\dev\a2a-dotnet\src\A2A\Models\TaskStatusUpdateEvent.cs                                                    | C#       |         10 |          9 |          3 |         22 |
+| e:\dev\a2a-dotnet\src\A2A\Models\TaskUpdateEvent.cs                                                          | C#       |         13 |         13 |          5 |         31 |
+| e:\dev\a2a-dotnet\src\A2A\Models\TextPart.cs                                                                 | C#       |          8 |          6 |          2 |         16 |
+| e:\dev\a2a-dotnet\src\A2A\Polyfills\System\Diagnostics\CodeAnalysis\UnconditionalSuppressMessageAttribute.cs | C#       |         18 |         60 |          8 |         86 |
+| e:\dev\a2a-dotnet\src\A2A\Polyfills\System\Runtime\CompilerServices\CompilerFeatureRequiredAttribute.cs      | C#       |         15 |         14 |          6 |         35 |
+| e:\dev\a2a-dotnet\src\A2A\Polyfills\System\Runtime\CompilerServices\IsExternalInit.cs                        | C#       |          4 |          6 |          2 |         12 |
+| e:\dev\a2a-dotnet\src\A2A\Polyfills\System\Runtime\CompilerServices\RequiredMemberAttribute.cs               | C#       |          5 |          5 |          3 |         13 |
+| e:\dev\a2a-dotnet\src\A2A\Server\ITaskManager.cs                                                             | C#       |         19 |        145 |         16 |        180 |
+| e:\dev\a2a-dotnet\src\A2A\Server\ITaskStore.cs                                                               | C#       |         10 |         42 |          6 |         58 |
+| e:\dev\a2a-dotnet\src\A2A\Server\InMemoryTaskStore.cs                                                        | C#       |         98 |         11 |         24 |        133 |
+| e:\dev\a2a-dotnet\src\A2A\Server\TaskManager.cs                                                              | C#       |        339 |         55 |         69 |        463 |
+| e:\dev\a2a-dotnet\src\A2A\Server\TaskUpdateEventEnumerator.cs                                                | C#       |         40 |         17 |         11 |         68 |
+| e:\dev\a2a-dotnet\src\A2A\openapi.yaml                                                                       | YAML     |      1,022 |          1 |          5 |      1,028 |
+| e:\dev\a2a-dotnet\src\Directory.Build.props                                                                  | XML      |         19 |          0 |          5 |         24 |
+| e:\dev\a2a-dotnet\tests\A2A.AspNetCore.UnitTests\A2A.AspNetCore.UnitTests.csproj                             | XML      |         33 |          1 |          9 |         43 |
+| e:\dev\a2a-dotnet\tests\A2A.AspNetCore.UnitTests\A2AEndpointRouteBuilderExtensionsTests.cs                   | C#       |         88 |         14 |         19 |        121 |
+| e:\dev\a2a-dotnet\tests\A2A.AspNetCore.UnitTests\A2AHttpProcessorTests.cs                                    | C#       |        130 |         19 |         24 |        173 |
+| e:\dev\a2a-dotnet\tests\A2A.AspNetCore.UnitTests\A2AJsonRpcProcessorTests.cs                                 | C#       |        403 |         39 |        101 |        543 |
+| e:\dev\a2a-dotnet\tests\A2A.AspNetCore.UnitTests\ClientTests.cs                                              | C#       |        152 |         19 |         32 |        203 |
+| e:\dev\a2a-dotnet\tests\A2A.AspNetCore.UnitTests\DistributedCacheTaskStoreTests.cs                           | C#       |        215 |         51 |         66 |        332 |
+| e:\dev\a2a-dotnet\tests\A2A.AspNetCore.UnitTests\ProcessMessageTests.cs                                      | C#       |          0 |        107 |          6 |        113 |
+| e:\dev\a2a-dotnet\tests\A2A.AspNetCore.UnitTests\Properties\AssemblyInfo.cs                                  | C#       |          2 |          0 |          1 |          3 |
+| e:\dev\a2a-dotnet\tests\A2A.AspNetCore.UnitTests\a2a.json                                                    | JSON     |      2,045 |          0 |          2 |      2,047 |
+| e:\dev\a2a-dotnet\tests\A2A.AspNetCore.UnitTests\specification.md                                            | Markdown |      1,516 |          0 |        293 |      1,809 |
+| e:\dev\a2a-dotnet\tests\A2A.UnitTests\A2A.UnitTests.csproj                                                   | XML      |         23 |          0 |          7 |         30 |
+| e:\dev\a2a-dotnet\tests\A2A.UnitTests\Client\A2ACardResolverTests.cs                                         | C#       |         59 |          7 |          9 |         75 |
+| e:\dev\a2a-dotnet\tests\A2A.UnitTests\Client\A2AClientTests.cs                                               | C#       |        491 |         50 |        109 |        650 |
+| e:\dev\a2a-dotnet\tests\A2A.UnitTests\Client\JsonRpcContentTests.cs                                          | C#       |         67 |         12 |         17 |         96 |
+| e:\dev\a2a-dotnet\tests\A2A.UnitTests\GitHubIssues\Issue160.cs                                               | C#       |        109 |          0 |          6 |        115 |
+| e:\dev\a2a-dotnet\tests\A2A.UnitTests\JsonRpc\A2AMethodsTests.cs                                             | C#       |         63 |         15 |         17 |         95 |
+| e:\dev\a2a-dotnet\tests\A2A.UnitTests\JsonRpc\ErrorTypesTests.cs                                             | C#       |         76 |         18 |         18 |        112 |
+| e:\dev\a2a-dotnet\tests\A2A.UnitTests\JsonRpc\JsonRpcErrorResponseTests.cs                                   | C#       |         55 |         12 |         14 |         81 |
+| e:\dev\a2a-dotnet\tests\A2A.UnitTests\JsonRpc\JsonRpcErrorTests.cs                                           | C#       |         26 |          6 |          9 |         41 |
+| e:\dev\a2a-dotnet\tests\A2A.UnitTests\JsonRpc\JsonRpcRequestConverterTests.cs                                | C#       |        474 |         66 |         97 |        637 |
+| e:\dev\a2a-dotnet\tests\A2A.UnitTests\JsonRpc\MethodNotFoundErrorTests.cs                                    | C#       |         11 |          2 |          3 |         16 |
+| e:\dev\a2a-dotnet\tests\A2A.UnitTests\MockHttpMessageHandler.cs                                              | C#       |         16 |          0 |          3 |         19 |
+| e:\dev\a2a-dotnet\tests\A2A.UnitTests\Models\A2AEventTests.cs                                                | C#       |        245 |         22 |         26 |        293 |
+| e:\dev\a2a-dotnet\tests\A2A.UnitTests\Models\A2AResponseTests.cs                                             | C#       |        202 |         20 |         23 |        245 |
+| e:\dev\a2a-dotnet\tests\A2A.UnitTests\Models\AIContentExtensionsTests.cs                                     | C#       |        216 |          1 |         30 |        247 |
+| e:\dev\a2a-dotnet\tests\A2A.UnitTests\Models\AgentCardSignatureTests.cs                                      | C#       |         59 |         10 |         11 |         80 |
+| e:\dev\a2a-dotnet\tests\A2A.UnitTests\Models\AgentCardTests.cs                                               | C#       |        253 |         22 |         27 |        302 |
+| e:\dev\a2a-dotnet\tests\A2A.UnitTests\Models\AgentSkillTests.cs                                              | C#       |        125 |         14 |         17 |        156 |
+| e:\dev\a2a-dotnet\tests\A2A.UnitTests\Models\AgentTransportTests.cs                                          | C#       |         79 |         21 |         22 |        122 |
+| e:\dev\a2a-dotnet\tests\A2A.UnitTests\Models\BaseKindDiscriminatorConverterEdgeTests.cs                      | C#       |         19 |          8 |          9 |         36 |
+| e:\dev\a2a-dotnet\tests\A2A.UnitTests\Models\FileContentSpecComplianceTests.cs                               | C#       |        126 |         20 |         25 |        171 |
+| e:\dev\a2a-dotnet\tests\A2A.UnitTests\Models\MessageSendParamsTests.cs                                       | C#       |         85 |          7 |         13 |        105 |
+| e:\dev\a2a-dotnet\tests\A2A.UnitTests\Models\SecuritySchemeTests.cs                                          | C#       |        160 |         27 |         33 |        220 |
+| e:\dev\a2a-dotnet\tests\A2A.UnitTests\ParsingTests.cs                                                        | C#       |        135 |         19 |         15 |        169 |
+| e:\dev\a2a-dotnet\tests\A2A.UnitTests\Properties\AssemblyInfo.cs                                             | C#       |          2 |          0 |          1 |          3 |
+| e:\dev\a2a-dotnet\tests\A2A.UnitTests\Server\InMemoryTaskStoreTests.cs                                       | C#       |        186 |         42 |         55 |        283 |
+| e:\dev\a2a-dotnet\tests\A2A.UnitTests\Server\TaskManagerTests.cs                                             | C#       |        649 |         60 |        118 |        827 |
+| e:\dev\a2a-dotnet\tests\A2A.UnitTests\Server\TaskUpdateEventEnumeratorTests.cs                               | C#       |         65 |         12 |         11 |         88 |
+| Total                                                                                                        |          |     16,478 |      3,426 |      2,956 |     22,860 |
++--------------------------------------------------------------------------------------------------------------+----------+------------+------------+------------+------------+
