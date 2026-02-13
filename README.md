@@ -30,6 +30,37 @@ This library implements the A2A Protocol **v1.0 Release Candidate**. Key v1.0 fe
 
 For migration details from v0.3, see [v1-migration-plan.md](v1-migration-plan.md).
 
+### Migrating from v0.3
+
+If you are upgrading from the v0.3 SDK, here are the key breaking changes:
+
+| v0.3 | v1.0 |
+|------|------|
+| `new TextPart { Text = "hi" }` | `Part.FromText("hi")` or `new Part { Text = "hi" }` |
+| `part.AsTextPart().Text` | `part.Text` |
+| `new FilePart { File = new FileContent(uri) }` | `Part.FromUrl(uri.ToString(), mediaType)` |
+| `AgentCard.Url` | `AgentCard.SupportedInterfaces[0].Url` |
+| `AgentCard.PreferredTransport` | `AgentCard.SupportedInterfaces[0].ProtocolBinding` |
+| `AgentCard.ProtocolVersion` | `AgentCard.SupportedInterfaces[0].ProtocolVersion` |
+| `AgentCapabilities.Streaming` (bool) | `AgentCapabilities.Streaming` (bool?) |
+| `SecurityScheme` (abstract, inheritance) | `SecurityScheme` (sealed, oneof properties) |
+| `PushNotificationAuthenticationInfo.Schemes` (list) | `PushNotificationAuthenticationInfo.Scheme` (string) |
+| `TaskStatusUpdateEvent.Final` | Removed — infer from `TaskState` |
+| `A2AMethods.MessageSend` (`"message/send"`) | `A2AMethods.SendMessage` (`"SendMessage"`) |
+| JSON: `"role": "user"` | JSON: `"role": "ROLE_USER"` |
+| JSON: `"state": "completed"` | JSON: `"state": "TASK_STATE_COMPLETED"` |
+| JSON: `{"kind":"text","text":"hi"}` | JSON: `{"text":"hi"}` |
+
+### v0.3 Compatibility Layer
+
+Original v0.3 model types are preserved in `A2A.Compat.V03` namespace under `src/A2A/Compat/V03/`. This includes:
+- All v0.3 model classes (`TextPart`, `FilePart`, `DataPart`, `FileContent`, `AgentTransport`, etc.)
+- v0.3 JSON-RPC method name constants (`V03Methods`)
+- v0.3 JSON converters (kebab-case enums, kind discriminators)
+- `V03Adapter` for converting between v0.3 and v1.0 models
+
+**To drop v0.3 support**: delete the `src/A2A/Compat/V03/` folder. No v1.0 code needs modification.
+
 ## Installation
 
 ### Core A2A Library
@@ -97,10 +128,10 @@ public class EchoAgent
         taskManager.OnAgentCardQuery = GetAgentCardAsync;
     }
 
-    private Task<Message> ProcessMessageAsync(MessageSendParams messageSendParams, CancellationToken cancellationToken)
+    private Task<A2AResponse> ProcessMessageAsync(MessageSendParams messageSendParams, CancellationToken cancellationToken)
     {
-        var text = messageSendParams.Message.Parts.OfType<TextPart>().First().Text;
-        return Task.FromResult(new Message
+        var text = messageSendParams.Message.Parts.First().Text;
+        return Task.FromResult<A2AResponse>(new AgentMessage
         {
             Role = MessageRole.Agent,
             MessageId = Guid.NewGuid().ToString(),
@@ -115,10 +146,10 @@ public class EchoAgent
         {
             Name = "Echo Agent",
             Description = "Echoes messages back to the user",
-            Url = agentUrl,
+            SupportedInterfaces = [new AgentInterface { Url = agentUrl }],
             Version = "1.0.0",
-            DefaultInputModes = ["text"],
-            DefaultOutputModes = ["text"],
+            DefaultInputModes = ["text/plain"],
+            DefaultOutputModes = ["text/plain"],
             Capabilities = new AgentCapabilities { Streaming = true }
         });
     }
@@ -133,7 +164,7 @@ using A2A;
 // Discover agent and create client
 var cardResolver = new A2ACardResolver(new Uri("http://localhost:5100/"));
 var agentCard = await cardResolver.GetAgentCardAsync();
-var client = new A2AClient(new Uri(agentCard.Url));
+var client = new A2AClient(new Uri(agentCard.SupportedInterfaces[0].Url));
 
 // Send message
 var response = await client.SendMessageAsync(new MessageSendParams
