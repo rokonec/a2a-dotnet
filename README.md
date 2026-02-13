@@ -17,7 +17,18 @@ Key features include:
 
 ## Protocol Compatibility
 
-This library implements most of the features of protocol v0.2.6, however there are some scenarios that are not yet complete for full compatibility with this version. A complete list of outstanding compatibility items can be found at: [open compatibility items](https://github.com/a2aproject/a2a-dotnet/issues?q=is:issue%20is:open%20(label:v0.2.4%20OR%20label:v0.2.5%20OR%20label:v0.2.6))
+This library implements the A2A Protocol **v1.0 Release Candidate**. Key v1.0 features:
+
+- **Flat Part model** — `text`, `raw`, `url`, `data` as oneof properties (no `kind` discriminator)
+- **SCREAMING_SNAKE_CASE enums** — `TASK_STATE_COMPLETED`, `ROLE_USER`, etc. per ProtoJSON spec
+- **PascalCase JSON-RPC methods** — `SendMessage`, `GetTask`, `CancelTask`, etc.
+- **SupportedInterfaces** — AgentCard declares protocol bindings via `supportedInterfaces` array
+- **SecurityScheme oneof** — `apiKeySecurityScheme`, `httpAuthSecurityScheme`, etc.
+- **New operations** — `ListTasks`, `SubscribeToTask`, `GetExtendedAgentCard`, push notification CRUD
+- **A2A-Version header** — Protocol version negotiation
+- **New error codes** — `VersionNotSupported`, `InvalidAgentResponse`, `ExtendedAgentCardNotConfigured`, `ExtensionSupportRequired`
+
+For migration details from v0.3, see [v1-migration-plan.md](v1-migration-plan.md).
 
 ## Installation
 
