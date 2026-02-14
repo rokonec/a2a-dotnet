@@ -121,15 +121,30 @@ public static class A2AJsonRpcProcessor
                 response = JsonRpcResponse.CreateJsonRpcResponse(requestId, cancelledTask);
                 break;
             case A2AMethods.CreateTaskPushNotificationConfig:
-                var taskPushNotificationConfig = DeserializeAndValidate<TaskPushNotificationConfig>(parameters.Value);
-                var setConfig = await taskManager.SetPushNotificationAsync(taskPushNotificationConfig, cancellationToken).ConfigureAwait(false);
-                response = JsonRpcResponse.CreateJsonRpcResponse(requestId, setConfig);
-                break;
+                {
+                    // Check push notification support before deserializing params
+                    var agentCard = await taskManager.OnAgentCardQuery(string.Empty, cancellationToken).ConfigureAwait(false);
+                    if (agentCard.Capabilities.PushNotifications == false)
+                    {
+                        throw new A2AException("Push notifications are not supported by this agent.", A2AErrorCode.PushNotificationNotSupported);
+                    }
+                    var taskPushNotificationConfig = DeserializeAndValidate<TaskPushNotificationConfig>(parameters.Value);
+                    var setConfig = await taskManager.SetPushNotificationAsync(taskPushNotificationConfig, cancellationToken).ConfigureAwait(false);
+                    response = JsonRpcResponse.CreateJsonRpcResponse(requestId, setConfig);
+                    break;
+                }
             case A2AMethods.GetTaskPushNotificationConfig:
-                var notificationConfigParams = DeserializeAndValidate<GetTaskPushNotificationConfigParams>(parameters.Value);
-                var getConfig = await taskManager.GetPushNotificationAsync(notificationConfigParams, cancellationToken).ConfigureAwait(false);
-                response = JsonRpcResponse.CreateJsonRpcResponse(requestId, getConfig);
-                break;
+                {
+                    var agentCard2 = await taskManager.OnAgentCardQuery(string.Empty, cancellationToken).ConfigureAwait(false);
+                    if (agentCard2.Capabilities.PushNotifications == false)
+                    {
+                        throw new A2AException("Push notifications are not supported by this agent.", A2AErrorCode.PushNotificationNotSupported);
+                    }
+                    var notificationConfigParams = DeserializeAndValidate<GetTaskPushNotificationConfigParams>(parameters.Value);
+                    var getConfig = await taskManager.GetPushNotificationAsync(notificationConfigParams, cancellationToken).ConfigureAwait(false);
+                    response = JsonRpcResponse.CreateJsonRpcResponse(requestId, getConfig);
+                    break;
+                }
             default:
                 response = JsonRpcResponse.MethodNotFoundResponse(requestId);
                 break;

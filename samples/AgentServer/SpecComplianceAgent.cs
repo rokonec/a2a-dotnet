@@ -61,7 +61,16 @@ public class SpecComplianceAgent
             DefaultInputModes = ["text/plain"],
             DefaultOutputModes = ["text/plain"],
             Capabilities = capabilities,
-            Skills = [],
+            Skills =
+            [
+                new AgentSkill
+                {
+                    Id = "echo",
+                    Name = "Echo",
+                    Description = "Echoes back any message sent to the agent.",
+                    Tags = ["echo", "test"],
+                }
+            ],
         });
     }
 }
