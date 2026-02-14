@@ -37,19 +37,25 @@ If you are upgrading from the v0.3 SDK, here are the key breaking changes:
 | v0.3 | v1.0 |
 |------|------|
 | `new TextPart { Text = "hi" }` | `Part.FromText("hi")` or `new Part { Text = "hi" }` |
-| `part.AsTextPart().Text` | `part.Text` |
+| `part.AsTextPart().Text` | `part.Text` (check `part.ContentCase`) |
 | `new FilePart { File = new FileContent(uri) }` | `Part.FromUrl(uri.ToString(), mediaType)` |
+| `A2AResponse` (abstract: AgentTask or AgentMessage) | `SendMessageResponse` (oneof: `.Task` or `.Message`) |
+| `A2AEvent` (abstract: all event types) | `StreamResponse` (oneof: `.Task`, `.Message`, `.StatusUpdate`, `.ArtifactUpdate`) |
+| `Task<A2AResponse>` return type | `Task<SendMessageResponse>` return type |
+| `IAsyncEnumerable<A2AEvent>` | `IAsyncEnumerable<StreamResponse>` |
 | `AgentCard.Url` | `AgentCard.SupportedInterfaces[0].Url` |
 | `AgentCard.PreferredTransport` | `AgentCard.SupportedInterfaces[0].ProtocolBinding` |
 | `AgentCard.ProtocolVersion` | `AgentCard.SupportedInterfaces[0].ProtocolVersion` |
 | `AgentCapabilities.Streaming` (bool) | `AgentCapabilities.Streaming` (bool?) |
 | `SecurityScheme` (abstract, inheritance) | `SecurityScheme` (sealed, oneof properties) |
+| `FileContent`, `AgentTransport`, `PartKind` | Removed from v1.0 (in `Compat/V03/` only) |
 | `PushNotificationAuthenticationInfo.Schemes` (list) | `PushNotificationAuthenticationInfo.Scheme` (string) |
 | `TaskStatusUpdateEvent.Final` | Removed — infer from `TaskState` |
 | `A2AMethods.MessageSend` (`"message/send"`) | `A2AMethods.SendMessage` (`"SendMessage"`) |
 | JSON: `"role": "user"` | JSON: `"role": "ROLE_USER"` |
 | JSON: `"state": "completed"` | JSON: `"state": "TASK_STATE_COMPLETED"` |
 | JSON: `{"kind":"text","text":"hi"}` | JSON: `{"text":"hi"}` |
+| JSON: `{"kind":"task",...}` response | JSON: `{"task":{...}}` response (oneof wrapper) |
 
 ### v0.3 Compatibility Layer
 
@@ -93,7 +99,10 @@ This library contains the core A2A protocol implementation. It includes the foll
 ### Core Models
 - **`AgentTask`**: Represents a task with its status, history, artifacts, and metadata.
 - **`AgentCard`**: Contains agent metadata, capabilities, and endpoint information.
-- **`Message`**: Represents messages exchanged between agents and clients.
+- **`AgentMessage`**: Represents messages exchanged between agents and clients.
+- **`Part`**: Content container with oneof semantics (`Text`, `Raw`, `Url`, or `Data`).
+- **`SendMessageResponse`**: Response from SendMessage — contains either a `Task` or `Message`.
+- **`StreamResponse`**: Streaming event wrapper — contains one of `Task`, `Message`, `StatusUpdate`, or `ArtifactUpdate`.
 
 ## Library: A2A.AspNetCore
 This library provides ASP.NET Core integration for hosting A2A agents. It includes the following key classes:
@@ -128,15 +137,18 @@ public class EchoAgent
         taskManager.OnAgentCardQuery = GetAgentCardAsync;
     }
 
-    private Task<A2AResponse> ProcessMessageAsync(MessageSendParams messageSendParams, CancellationToken cancellationToken)
+    private Task<SendMessageResponse> ProcessMessageAsync(MessageSendParams messageSendParams, CancellationToken cancellationToken)
     {
         var text = messageSendParams.Message.Parts.First().Text;
-        return Task.FromResult<A2AResponse>(new AgentMessage
+        return Task.FromResult(new SendMessageResponse
         {
-            Role = MessageRole.Agent,
-            MessageId = Guid.NewGuid().ToString(),
-            ContextId = messageSendParams.Message.ContextId,
-            Parts = [new TextPart { Text = $"Echo: {text}" }]
+            Message = new AgentMessage
+            {
+                Role = MessageRole.Agent,
+                MessageId = Guid.NewGuid().ToString(),
+                ContextId = messageSendParams.Message.ContextId,
+                Parts = [new TextPart { Text = $"Echo: {text}" }]
+            }
         });
     }
 

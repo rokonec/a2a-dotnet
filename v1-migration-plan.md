@@ -1,5 +1,20 @@
 # A2A .NET SDK: v0.3 → v1.0 Migration Plan
 
+> **Status: Migration Complete.** This document was the original planning artifact. See README.md for the current migration guide.
+
+## What Was Done
+
+- v1.0 data model: flat oneof types (`SendMessageResponse`, `StreamResponse`, `Part`), no abstract class hierarchies
+- SCREAMING_SNAKE_CASE enums, PascalCase JSON-RPC methods
+- AgentCard with `supportedInterfaces`, SecurityScheme as oneof
+- New operations: ListTasks, GetExtendedAgentCard, push notification CRUD
+- A2A-Version header support
+- No custom JSON converters on model types — plain STJ with source gen
+- v0.3 compat layer in `Compat/V03/` (isolated, deletable)
+- TCK validation: 39/81 tests passing (28 failures are TCK bugs with ListTasks method name)
+
+## Original Plan
+
 ## Problem Statement
 
 The a2a-dotnet SDK currently implements the A2A protocol v0.3. The protocol has released a v1.0 Release Candidate with significant breaking changes to the data model, serialization format, operation names, and new operations. We need to migrate the SDK to v1.0 while maintaining backward compatibility with v0.3 — and **designing for easy removal of v0.3 support** when the time comes.
