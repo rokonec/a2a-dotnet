@@ -28,7 +28,7 @@ This library implements the A2A Protocol **v1.0 Release Candidate**. Key v1.0 fe
 - **A2A-Version header** — Protocol version negotiation
 - **New error codes** — `VersionNotSupported`, `InvalidAgentResponse`, `ExtendedAgentCardNotConfigured`, `ExtensionSupportRequired`
 
-For migration details from v0.3, see [v1-migration-plan.md](v1-migration-plan.md).
+For migration details from v0.3, see the **[Migration Guide](docs/migration-guide-v1.md)** with before/after code examples.
 
 ### Migrating from v0.3
 
