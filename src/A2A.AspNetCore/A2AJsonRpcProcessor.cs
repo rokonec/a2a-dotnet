@@ -34,6 +34,15 @@ public static class A2AJsonRpcProcessor
     {
         using var activity = ActivitySource.StartActivity("HandleA2ARequest", ActivityKind.Server);
 
+        // Check A2A-Version header (empty = 0.3 per spec, "1.0" = v1.0)
+        var version = request.Headers["A2A-Version"].FirstOrDefault();
+        if (!string.IsNullOrEmpty(version) && version != "1.0" && version != "0.3")
+        {
+            return new JsonRpcResponseResult(JsonRpcResponse.CreateJsonRpcErrorResponse(
+                new JsonRpcId((string?)null),
+                new A2AException($"Protocol version '{version}' is not supported. Supported versions: 0.3, 1.0", A2AErrorCode.VersionNotSupported)));
+        }
+
         JsonRpcRequest? rpcRequest = null;
 
         try
@@ -94,33 +103,48 @@ public static class A2AJsonRpcProcessor
 
         switch (method)
         {
-            case A2AMethods.MessageSend:
+            case A2AMethods.SendMessage:
                 var taskSendParams = DeserializeAndValidate<MessageSendParams>(parameters.Value);
-                var a2aResponse = await taskManager.SendMessageAsync(taskSendParams, cancellationToken).ConfigureAwait(false);
-                response = JsonRpcResponse.CreateJsonRpcResponse(requestId, a2aResponse);
+                var SendMessageResponse = await taskManager.SendMessageAsync(taskSendParams, cancellationToken).ConfigureAwait(false);
+                response = JsonRpcResponse.CreateJsonRpcResponse(requestId, SendMessageResponse);
                 break;
-            case A2AMethods.TaskGet:
+            case A2AMethods.GetTask:
                 var taskIdParams = DeserializeAndValidate<TaskQueryParams>(parameters.Value);
                 var getAgentTask = await taskManager.GetTaskAsync(taskIdParams, cancellationToken).ConfigureAwait(false);
                 response = getAgentTask is null
                     ? JsonRpcResponse.TaskNotFoundResponse(requestId)
                     : JsonRpcResponse.CreateJsonRpcResponse(requestId, getAgentTask);
                 break;
-            case A2AMethods.TaskCancel:
+            case A2AMethods.CancelTask:
                 var taskIdParamsCancel = DeserializeAndValidate<TaskIdParams>(parameters.Value);
                 var cancelledTask = await taskManager.CancelTaskAsync(taskIdParamsCancel, cancellationToken).ConfigureAwait(false);
                 response = JsonRpcResponse.CreateJsonRpcResponse(requestId, cancelledTask);
                 break;
-            case A2AMethods.TaskPushNotificationConfigSet:
-                var taskPushNotificationConfig = DeserializeAndValidate<TaskPushNotificationConfig>(parameters.Value);
-                var setConfig = await taskManager.SetPushNotificationAsync(taskPushNotificationConfig, cancellationToken).ConfigureAwait(false);
-                response = JsonRpcResponse.CreateJsonRpcResponse(requestId, setConfig);
-                break;
-            case A2AMethods.TaskPushNotificationConfigGet:
-                var notificationConfigParams = DeserializeAndValidate<GetTaskPushNotificationConfigParams>(parameters.Value);
-                var getConfig = await taskManager.GetPushNotificationAsync(notificationConfigParams, cancellationToken).ConfigureAwait(false);
-                response = JsonRpcResponse.CreateJsonRpcResponse(requestId, getConfig);
-                break;
+            case A2AMethods.CreateTaskPushNotificationConfig:
+                {
+                    // Check push notification support before deserializing params
+                    var agentCard = await taskManager.OnAgentCardQuery(string.Empty, cancellationToken).ConfigureAwait(false);
+                    if (agentCard.Capabilities.PushNotifications == false)
+                    {
+                        throw new A2AException("Push notifications are not supported by this agent.", A2AErrorCode.PushNotificationNotSupported);
+                    }
+                    var taskPushNotificationConfig = DeserializeAndValidate<TaskPushNotificationConfig>(parameters.Value);
+                    var setConfig = await taskManager.SetPushNotificationAsync(taskPushNotificationConfig, cancellationToken).ConfigureAwait(false);
+                    response = JsonRpcResponse.CreateJsonRpcResponse(requestId, setConfig);
+                    break;
+                }
+            case A2AMethods.GetTaskPushNotificationConfig:
+                {
+                    var agentCard2 = await taskManager.OnAgentCardQuery(string.Empty, cancellationToken).ConfigureAwait(false);
+                    if (agentCard2.Capabilities.PushNotifications == false)
+                    {
+                        throw new A2AException("Push notifications are not supported by this agent.", A2AErrorCode.PushNotificationNotSupported);
+                    }
+                    var notificationConfigParams = DeserializeAndValidate<GetTaskPushNotificationConfigParams>(parameters.Value);
+                    var getConfig = await taskManager.GetPushNotificationAsync(notificationConfigParams, cancellationToken).ConfigureAwait(false);
+                    response = JsonRpcResponse.CreateJsonRpcResponse(requestId, getConfig);
+                    break;
+                }
             default:
                 response = JsonRpcResponse.MethodNotFoundResponse(requestId);
                 break;
@@ -136,15 +160,16 @@ public static class A2AJsonRpcProcessor
         {
             parms = jsonParamValue.Deserialize(A2AJsonUtilities.DefaultOptions.GetTypeInfo(typeof(T))) as T;
         }
-        catch (JsonException)
+        catch (JsonException ex)
         {
-            parms = null;
+            // Provide more specific error information about why parameter deserialization failed
+            throw new A2AException($"Invalid parameters for {typeof(T).Name}: {ex.Message}", ex, A2AErrorCode.InvalidParams);
         }
 
         switch (parms)
         {
             case null:
-                throw new A2AException("Invalid parameters", A2AErrorCode.InvalidParams);
+                throw new A2AException($"Failed to deserialize parameters as {typeof(T).Name}", A2AErrorCode.InvalidParams);
             case MessageSendParams messageSendParams when messageSendParams.Message.Parts.Count == 0:
                 throw new A2AException("Message parts cannot be empty", A2AErrorCode.InvalidParams);
             case TaskQueryParams taskQueryParams when taskQueryParams.HistoryLength < 0:
@@ -180,11 +205,11 @@ public static class A2AJsonRpcProcessor
 
         switch (method)
         {
-            case A2AMethods.TaskSubscribe:
+            case A2AMethods.SubscribeToTask:
                 var taskIdParams = DeserializeAndValidate<TaskIdParams>(parameters.Value);
                 var taskEvents = taskManager.SubscribeToTaskAsync(taskIdParams, cancellationToken);
                 return new JsonRpcStreamedResult(taskEvents, requestId);
-            case A2AMethods.MessageStream:
+            case A2AMethods.SendStreamingMessage:
                 var taskSendParams = DeserializeAndValidate<MessageSendParams>(parameters.Value);
                 var sendEvents = taskManager.SendMessageStreamingAsync(taskSendParams, cancellationToken);
                 return new JsonRpcStreamedResult(sendEvents, requestId);

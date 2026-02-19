@@ -17,7 +17,55 @@ Key features include:
 
 ## Protocol Compatibility
 
-This library implements most of the features of protocol v0.2.6, however there are some scenarios that are not yet complete for full compatibility with this version. A complete list of outstanding compatibility items can be found at: [open compatibility items](https://github.com/a2aproject/a2a-dotnet/issues?q=is:issue%20is:open%20(label:v0.2.4%20OR%20label:v0.2.5%20OR%20label:v0.2.6))
+This library implements the A2A Protocol **v1.0 Release Candidate**. Key v1.0 features:
+
+- **Flat Part model** — `text`, `raw`, `url`, `data` as oneof properties (no `kind` discriminator)
+- **SCREAMING_SNAKE_CASE enums** — `TASK_STATE_COMPLETED`, `ROLE_USER`, etc. per ProtoJSON spec
+- **PascalCase JSON-RPC methods** — `SendMessage`, `GetTask`, `CancelTask`, etc.
+- **SupportedInterfaces** — AgentCard declares protocol bindings via `supportedInterfaces` array
+- **SecurityScheme oneof** — `apiKeySecurityScheme`, `httpAuthSecurityScheme`, etc.
+- **New operations** — `ListTasks`, `SubscribeToTask`, `GetExtendedAgentCard`, push notification CRUD
+- **A2A-Version header** — Protocol version negotiation
+- **New error codes** — `VersionNotSupported`, `InvalidAgentResponse`, `ExtendedAgentCardNotConfigured`, `ExtensionSupportRequired`
+
+For migration details from v0.3, see the **[Migration Guide](docs/migration-guide-v1.md)** with before/after code examples.
+
+### Migrating from v0.3
+
+If you are upgrading from the v0.3 SDK, here are the key breaking changes:
+
+| v0.3 | v1.0 |
+|------|------|
+| `new TextPart { Text = "hi" }` | `Part.FromText("hi")` or `new Part { Text = "hi" }` |
+| `part.AsTextPart().Text` | `part.Text` (check `part.ContentCase`) |
+| `new FilePart { File = new FileContent(uri) }` | `Part.FromUrl(uri.ToString(), mediaType)` |
+| `A2AResponse` (abstract: AgentTask or AgentMessage) | `SendMessageResponse` (oneof: `.Task` or `.Message`) |
+| `A2AEvent` (abstract: all event types) | `StreamResponse` (oneof: `.Task`, `.Message`, `.StatusUpdate`, `.ArtifactUpdate`) |
+| `Task<A2AResponse>` return type | `Task<SendMessageResponse>` return type |
+| `IAsyncEnumerable<A2AEvent>` | `IAsyncEnumerable<StreamResponse>` |
+| `AgentCard.Url` | `AgentCard.SupportedInterfaces[0].Url` |
+| `AgentCard.PreferredTransport` | `AgentCard.SupportedInterfaces[0].ProtocolBinding` |
+| `AgentCard.ProtocolVersion` | `AgentCard.SupportedInterfaces[0].ProtocolVersion` |
+| `AgentCapabilities.Streaming` (bool) | `AgentCapabilities.Streaming` (bool?) |
+| `SecurityScheme` (abstract, inheritance) | `SecurityScheme` (sealed, oneof properties) |
+| `FileContent`, `AgentTransport`, `PartKind` | Removed from v1.0 (in `Compat/V03/` only) |
+| `PushNotificationAuthenticationInfo.Schemes` (list) | `PushNotificationAuthenticationInfo.Scheme` (string) |
+| `TaskStatusUpdateEvent.Final` | Removed — infer from `TaskState` |
+| `A2AMethods.MessageSend` (`"message/send"`) | `A2AMethods.SendMessage` (`"SendMessage"`) |
+| JSON: `"role": "user"` | JSON: `"role": "ROLE_USER"` |
+| JSON: `"state": "completed"` | JSON: `"state": "TASK_STATE_COMPLETED"` |
+| JSON: `{"kind":"text","text":"hi"}` | JSON: `{"text":"hi"}` |
+| JSON: `{"kind":"task",...}` response | JSON: `{"task":{...}}` response (oneof wrapper) |
+
+### v0.3 Compatibility Layer
+
+Original v0.3 model types are preserved in `A2A.Compat.V03` namespace under `src/A2A/Compat/V03/`. This includes:
+- All v0.3 model classes (`TextPart`, `FilePart`, `DataPart`, `FileContent`, `AgentTransport`, etc.)
+- v0.3 JSON-RPC method name constants (`V03Methods`)
+- v0.3 JSON converters (kebab-case enums, kind discriminators)
+- `V03Adapter` for converting between v0.3 and v1.0 models
+
+**To drop v0.3 support**: delete the `src/A2A/Compat/V03/` folder. No v1.0 code needs modification.
 
 ## Installation
 
@@ -51,7 +99,10 @@ This library contains the core A2A protocol implementation. It includes the foll
 ### Core Models
 - **`AgentTask`**: Represents a task with its status, history, artifacts, and metadata.
 - **`AgentCard`**: Contains agent metadata, capabilities, and endpoint information.
-- **`Message`**: Represents messages exchanged between agents and clients.
+- **`AgentMessage`**: Represents messages exchanged between agents and clients.
+- **`Part`**: Content container with oneof semantics (`Text`, `Raw`, `Url`, or `Data`).
+- **`SendMessageResponse`**: Response from SendMessage — contains either a `Task` or `Message`.
+- **`StreamResponse`**: Streaming event wrapper — contains one of `Task`, `Message`, `StatusUpdate`, or `ArtifactUpdate`.
 
 ## Library: A2A.AspNetCore
 This library provides ASP.NET Core integration for hosting A2A agents. It includes the following key classes:
@@ -86,15 +137,18 @@ public class EchoAgent
         taskManager.OnAgentCardQuery = GetAgentCardAsync;
     }
 
-    private Task<Message> ProcessMessageAsync(MessageSendParams messageSendParams, CancellationToken cancellationToken)
+    private Task<SendMessageResponse> ProcessMessageAsync(MessageSendParams messageSendParams, CancellationToken cancellationToken)
     {
-        var text = messageSendParams.Message.Parts.OfType<TextPart>().First().Text;
-        return Task.FromResult(new Message
+        var text = messageSendParams.Message.Parts.First().Text;
+        return Task.FromResult(new SendMessageResponse
         {
-            Role = MessageRole.Agent,
-            MessageId = Guid.NewGuid().ToString(),
-            ContextId = messageSendParams.Message.ContextId,
-            Parts = [new TextPart { Text = $"Echo: {text}" }]
+            Message = new AgentMessage
+            {
+                Role = MessageRole.Agent,
+                MessageId = Guid.NewGuid().ToString(),
+                ContextId = messageSendParams.Message.ContextId,
+                Parts = [new TextPart { Text = $"Echo: {text}" }]
+            }
         });
     }
 
@@ -104,10 +158,10 @@ public class EchoAgent
         {
             Name = "Echo Agent",
             Description = "Echoes messages back to the user",
-            Url = agentUrl,
+            SupportedInterfaces = [new AgentInterface { Url = agentUrl }],
             Version = "1.0.0",
-            DefaultInputModes = ["text"],
-            DefaultOutputModes = ["text"],
+            DefaultInputModes = ["text/plain"],
+            DefaultOutputModes = ["text/plain"],
             Capabilities = new AgentCapabilities { Streaming = true }
         });
     }
@@ -122,12 +176,12 @@ using A2A;
 // Discover agent and create client
 var cardResolver = new A2ACardResolver(new Uri("http://localhost:5100/"));
 var agentCard = await cardResolver.GetAgentCardAsync();
-var client = new A2AClient(new Uri(agentCard.Url));
+var client = new A2AClient(new Uri(agentCard.SupportedInterfaces[0].Url));
 
 // Send message
 var response = await client.SendMessageAsync(new MessageSendParams
 {
-    Message = new Message
+    Message = new AgentMessage
     {
         Role = MessageRole.User,
         Parts = [new TextPart { Text = "Hello!" }]

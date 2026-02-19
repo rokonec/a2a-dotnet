@@ -1,4 +1,4 @@
-namespace A2A;
+namespace A2A.Compat.V03;
 
 /// <summary>
 /// Defines the set of A2A event kinds used as the 'kind' discriminator in serialized payloads.

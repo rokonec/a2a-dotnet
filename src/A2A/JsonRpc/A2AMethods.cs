@@ -1,56 +1,81 @@
 namespace A2A;
 
 /// <summary>
-/// Constants for A2A JSON-RPC method names.
+/// Constants for A2A JSON-RPC method names (v1.0 PascalCase).
 /// </summary>
 public static class A2AMethods
 {
     /// <summary>
-    /// Method for sending messages to agents.
+    /// Send a message to the agent.
     /// </summary>
-    public const string MessageSend = "message/send";
+    public const string SendMessage = "SendMessage";
 
     /// <summary>
-    /// Method for streaming messages from agents.
+    /// Send a message with streaming response.
     /// </summary>
-    public const string MessageStream = "message/stream";
+    public const string SendStreamingMessage = "SendStreamingMessage";
 
     /// <summary>
-    /// Method for retrieving task information.
+    /// Get the current state of a task.
     /// </summary>
-    public const string TaskGet = "tasks/get";
+    public const string GetTask = "GetTask";
 
     /// <summary>
-    /// Method for canceling tasks.
+    /// List tasks with optional filtering and pagination.
     /// </summary>
-    public const string TaskCancel = "tasks/cancel";
+    public const string ListTasks = "ListTasks";
 
     /// <summary>
-    /// Method for subscribing to task updates.
+    /// Cancel a task.
     /// </summary>
-    public const string TaskSubscribe = "tasks/resubscribe";
+    public const string CancelTask = "CancelTask";
 
     /// <summary>
-    /// Method for setting push notification configuration.
+    /// Subscribe to task updates via streaming.
     /// </summary>
-    public const string TaskPushNotificationConfigSet = "tasks/pushNotificationConfig/set";
+    public const string SubscribeToTask = "SubscribeToTask";
 
     /// <summary>
-    /// Method for getting push notification configuration.
+    /// Create a push notification configuration for a task.
     /// </summary>
-    public const string TaskPushNotificationConfigGet = "tasks/pushNotificationConfig/get";
+    public const string CreateTaskPushNotificationConfig = "CreateTaskPushNotificationConfig";
+
+    /// <summary>
+    /// Get a push notification configuration for a task.
+    /// </summary>
+    public const string GetTaskPushNotificationConfig = "GetTaskPushNotificationConfig";
+
+    /// <summary>
+    /// List push notification configurations for a task.
+    /// </summary>
+    public const string ListTaskPushNotificationConfig = "ListTaskPushNotificationConfig";
+
+    /// <summary>
+    /// Delete a push notification configuration for a task.
+    /// </summary>
+    public const string DeleteTaskPushNotificationConfig = "DeleteTaskPushNotificationConfig";
+
+    /// <summary>
+    /// Get the extended agent card for authenticated agents.
+    /// </summary>
+    public const string GetExtendedAgentCard = "GetExtendedAgentCard";
 
     /// <summary>
     /// Determines if a method requires streaming response handling.
     /// </summary>
     /// <param name="method">The method name to check.</param>
     /// <returns>True if the method requires streaming, false otherwise.</returns>
-    public static bool IsStreamingMethod(string method) => method is MessageStream or TaskSubscribe;
+    public static bool IsStreamingMethod(string method) => method is SendStreamingMessage or SubscribeToTask;
 
     /// <summary>
     /// Determines if a method name is valid for A2A JSON-RPC.
     /// </summary>
     /// <param name="method">The method name to validate.</param>
     /// <returns>True if the method is valid, false otherwise.</returns>
-    public static bool IsValidMethod(string method) => method is MessageSend or MessageStream or TaskGet or TaskCancel or TaskSubscribe or TaskPushNotificationConfigSet or TaskPushNotificationConfigGet;
+    public static bool IsValidMethod(string method) => method is
+        SendMessage or SendStreamingMessage or
+        GetTask or ListTasks or CancelTask or SubscribeToTask or
+        CreateTaskPushNotificationConfig or GetTaskPushNotificationConfig or
+        ListTaskPushNotificationConfig or DeleteTaskPushNotificationConfig or
+        GetExtendedAgentCard;
 }

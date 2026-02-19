@@ -31,6 +31,26 @@ public enum A2AErrorCode
     ContentTypeNotSupported = -32005,
 
     /// <summary>
+    /// Invalid agent response - The agent returned a non-conforming response.
+    /// </summary>
+    InvalidAgentResponse = -32006,
+
+    /// <summary>
+    /// Extended agent card not configured - The agent doesn't have an extended card configured.
+    /// </summary>
+    ExtendedAgentCardNotConfigured = -32007,
+
+    /// <summary>
+    /// Extension support required - Client must support a required extension.
+    /// </summary>
+    ExtensionSupportRequired = -32008,
+
+    /// <summary>
+    /// Version not supported - The requested A2A protocol version is not supported.
+    /// </summary>
+    VersionNotSupported = -32009,
+
+    /// <summary>
     /// Invalid request - The JSON is not a valid Request object.
     /// </summary>
     InvalidRequest = -32600,

@@ -21,7 +21,6 @@ namespace A2A.UnitTests.GitHubIssues
                     "name": "artifact-1",
                     "parts": [
                       {
-                        "kind": "text",
                         "metadata": null,
                         "text": "Artifact update from the Movie Agent"
                       }
@@ -38,13 +37,12 @@ namespace A2A.UnitTests.GitHubIssues
                     "metadata": null,
                     "parts": [
                       {
-                        "kind": "text",
                         "metadata": null,
                         "text": "jimmy"
                       }
                     ],
                     "referenceTaskIds": null,
-                    "role": "user",
+                    "role": "ROLE_USER",
                     "taskId": null
                   },
                   {
@@ -55,13 +53,12 @@ namespace A2A.UnitTests.GitHubIssues
                     "metadata": null,
                     "parts": [
                       {
-                        "kind": "text",
                         "metadata": null,
                         "text": "Generating code..."
                       }
                     ],
                     "referenceTaskIds": null,
-                    "role": "agent",
+                    "role": "ROLE_AGENT",
                     "taskId": "6b349583-196e-444c-a0bd-a4f22f0753f0"
                   },
                   {
@@ -72,7 +69,7 @@ namespace A2A.UnitTests.GitHubIssues
                     "metadata": null,
                     "parts": [],
                     "referenceTaskIds": null,
-                    "role": "agent",
+                    "role": "ROLE_AGENT",
                     "taskId": "6b349583-196e-444c-a0bd-a4f22f0753f0"
                   }
                 ],
@@ -88,10 +85,10 @@ namespace A2A.UnitTests.GitHubIssues
                     "metadata": null,
                     "parts": [],
                     "referenceTaskIds": null,
-                    "role": "agent",
+                    "role": "ROLE_AGENT",
                     "taskId": "6b349583-196e-444c-a0bd-a4f22f0753f0"
                   },
-                  "state": "completed",
+                  "state": "TASK_STATE_COMPLETED",
                   "timestamp": "2025-08-25T09:58:01.545"
                 }
               }

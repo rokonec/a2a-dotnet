@@ -18,7 +18,7 @@ public interface ITaskManager
     /// <see href="https://github.com/a2aproject/A2A/blob/main/docs/topics/life-of-a-task.md#agent-message-or-a-task"/>.
     /// </para>
     /// </remarks>
-    Func<MessageSendParams, CancellationToken, Task<A2AResponse>>? OnMessageReceived { get; set; }
+    Func<MessageSendParams, CancellationToken, Task<SendMessageResponse>>? OnMessageReceived { get; set; }
 
     /// <summary>
     /// Gets or sets the handler for when a task is created.
@@ -129,7 +129,7 @@ public interface ITaskManager
     /// <param name="messageSendParams">The message parameters containing the message content and optional task/context IDs.</param>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
     /// <returns>The agent's response as either <see cref="AgentTask"/> or a direct <see cref="AgentMessage"/> from the handler.</returns>
-    Task<A2AResponse?> SendMessageAsync(MessageSendParams messageSendParams, CancellationToken cancellationToken = default);
+    Task<SendMessageResponse?> SendMessageAsync(MessageSendParams messageSendParams, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Processes a message request and returns a stream of events as they occur.
@@ -141,7 +141,7 @@ public interface ITaskManager
     /// <param name="messageSendParams">The message parameters containing the message content and optional task/context IDs.</param>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
     /// <returns>An async enumerable that yields events as they are produced by the agent.</returns>
-    IAsyncEnumerable<A2AEvent> SendMessageStreamingAsync(MessageSendParams messageSendParams, CancellationToken cancellationToken = default);
+    IAsyncEnumerable<StreamResponse> SendMessageStreamingAsync(MessageSendParams messageSendParams, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Resubscribes to an existing task's event stream to receive ongoing updates.
@@ -153,7 +153,7 @@ public interface ITaskManager
     /// <param name="taskIdParams">Parameters containing the task ID to resubscribe to.</param>
     /// <param name="cancellationToken"> A cancellation token that can be used to cancel the operation.</param>
     /// <returns>An async enumerable of events for the specified task.</returns>
-    IAsyncEnumerable<A2AEvent> SubscribeToTaskAsync(TaskIdParams taskIdParams, CancellationToken cancellationToken = default);
+    IAsyncEnumerable<StreamResponse> SubscribeToTaskAsync(TaskIdParams taskIdParams, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Sets or updates the push notification configuration for a specific task.
@@ -169,11 +169,24 @@ public interface ITaskManager
     /// <summary>
     /// Retrieves the push notification configuration for a specific task.
     /// </summary>
-    /// <remarks>
-    /// Returns the callback URL and authentication settings configured for receiving task update notifications.
-    /// </remarks>
     /// <param name="notificationConfigParams">Parameters containing the task ID and optional push notification config ID.</param>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
     /// <returns>The push notification configuration if found, null otherwise.</returns>
     Task<TaskPushNotificationConfig?> GetPushNotificationAsync(GetTaskPushNotificationConfigParams? notificationConfigParams, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Lists tasks with optional filtering and pagination.
+    /// </summary>
+    /// <param name="request">The list tasks request with filtering parameters.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
+    /// <returns>The list of tasks matching the criteria.</returns>
+    Task<ListTasksResponse> ListTasksAsync(ListTasksRequest request, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Retrieves the extended agent card for authenticated users.
+    /// </summary>
+    /// <param name="agentUrl">The URL of the agent.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
+    /// <returns>The extended agent card.</returns>
+    Task<AgentCard> GetExtendedAgentCardAsync(string agentUrl, CancellationToken cancellationToken = default);
 }

@@ -24,7 +24,7 @@ public sealed class TaskManager : ITaskManager
     private readonly ConcurrentDictionary<string, TaskUpdateEventEnumerator> _taskUpdateEventEnumerators = [];
 
     /// <inheritdoc />
-    public Func<MessageSendParams, CancellationToken, Task<A2AResponse>>? OnMessageReceived { get; set; }
+    public Func<MessageSendParams, CancellationToken, Task<SendMessageResponse>>? OnMessageReceived { get; set; }
 
     /// <inheritdoc />
     public Func<AgentTask, CancellationToken, Task> OnTaskCreated { get; set; } = static (_, _) => Task.CompletedTask;
@@ -39,7 +39,7 @@ public sealed class TaskManager : ITaskManager
     public Func<string, CancellationToken, Task<AgentCard>> OnAgentCardQuery { get; set; }
         = static (agentUrl, ct) => ct.IsCancellationRequested
             ? Task.FromCanceled<AgentCard>(ct)
-            : Task.FromResult(new AgentCard() { Name = "Unknown", Url = agentUrl });
+            : Task.FromResult(new AgentCard() { Name = "Unknown", SupportedInterfaces = [new AgentInterface { Url = agentUrl }] });
 
     /// <summary>
     /// Initializes a new instance of the TaskManager class.
@@ -138,7 +138,7 @@ public sealed class TaskManager : ITaskManager
     }
 
     /// <inheritdoc />
-    public async Task<A2AResponse?> SendMessageAsync(MessageSendParams messageSendParams, CancellationToken cancellationToken = default)
+    public async Task<SendMessageResponse?> SendMessageAsync(MessageSendParams messageSendParams, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
@@ -203,11 +203,11 @@ public sealed class TaskManager : ITaskManager
             await OnTaskUpdated(task, cancellationToken).ConfigureAwait(false);
         }
 
-        return task.WithHistoryTrimmedTo(messageSendParams.Configuration?.HistoryLength);
+        return new SendMessageResponse { Task = task.WithHistoryTrimmedTo(messageSendParams.Configuration?.HistoryLength) };
     }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<A2AEvent> SendMessageStreamingAsync(MessageSendParams messageSendParams, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<StreamResponse> SendMessageStreamingAsync(MessageSendParams messageSendParams, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
@@ -243,8 +243,15 @@ public sealed class TaskManager : ITaskManager
             // If the task is configured to process simple messages without tasks, pass the message directly to the agent
             if (OnMessageReceived != null)
             {
-                var message = await OnMessageReceived(messageSendParams, cancellationToken).ConfigureAwait(false);
-                yield return message;
+                var response = await OnMessageReceived(messageSendParams, cancellationToken).ConfigureAwait(false);
+                if (response.Message is not null)
+                {
+                    yield return new StreamResponse { Message = response.Message };
+                }
+                else if (response.Task is not null)
+                {
+                    yield return new StreamResponse { Task = response.Task };
+                }
                 yield break;
             }
             else
@@ -255,7 +262,7 @@ public sealed class TaskManager : ITaskManager
                 agentTask.History.Add(messageSendParams.Message);
                 enumerator = new TaskUpdateEventEnumerator();
                 _taskUpdateEventEnumerators[agentTask.Id] = enumerator;
-                enumerator.NotifyEvent(agentTask);
+                enumerator.NotifyEvent(new StreamResponse { Task = agentTask });
                 enumerator.ProcessingTask = Task.Run(async () =>
                 {
                     using var createActivity = ActivitySource.StartActivity("OnTaskCreated", ActivityKind.Server);
@@ -272,7 +279,7 @@ public sealed class TaskManager : ITaskManager
             await _taskStore.SetTaskAsync(agentTask, cancellationToken).ConfigureAwait(false);
             enumerator = new TaskUpdateEventEnumerator();
             _taskUpdateEventEnumerators[agentTask.Id] = enumerator;
-            enumerator.NotifyEvent(agentTask);
+            enumerator.NotifyEvent(new StreamResponse { Task = agentTask });
             enumerator.ProcessingTask = Task.Run(async () =>
             {
                 using var createActivity = ActivitySource.StartActivity("OnTaskUpdated", ActivityKind.Server);
@@ -287,7 +294,7 @@ public sealed class TaskManager : ITaskManager
     }
 
     /// <inheritdoc />
-    public IAsyncEnumerable<A2AEvent> SubscribeToTaskAsync(TaskIdParams taskIdParams, CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<StreamResponse> SubscribeToTaskAsync(TaskIdParams taskIdParams, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
@@ -300,7 +307,7 @@ public sealed class TaskManager : ITaskManager
         activity?.SetTag("task.id", taskIdParams.Id);
 
         return _taskUpdateEventEnumerators.TryGetValue(taskIdParams.Id, out var enumerator) ?
-            (IAsyncEnumerable<A2AEvent>)enumerator :
+            (IAsyncEnumerable<StreamResponse>)enumerator :
             throw new A2AException("Task not found or invalid TaskIdParams.", A2AErrorCode.TaskNotFound);
     }
 
@@ -378,14 +385,17 @@ public sealed class TaskManager : ITaskManager
             _taskUpdateEventEnumerators.TryGetValue(taskId, out var enumerator);
             if (enumerator != null)
             {
-                var taskUpdateEvent = new TaskStatusUpdateEvent
+                var taskUpdateEvent = new StreamResponse
                 {
-                    TaskId = taskId,
-                    Status = agentStatus,
-                    Final = final
+                    StatusUpdate = new TaskStatusUpdateEvent
+                    {
+                        TaskId = taskId,
+                        Status = agentStatus,
+                    }
                 };
 
-                if (final)
+                bool isTerminal = final || status is TaskState.Completed or TaskState.Canceled or TaskState.Failed or TaskState.Rejected;
+                if (isTerminal)
                 {
                     activity?.SetTag("event.type", "final");
                     enumerator.NotifyFinalEvent(taskUpdateEvent);
@@ -436,10 +446,13 @@ public sealed class TaskManager : ITaskManager
                 _taskUpdateEventEnumerators.TryGetValue(task.Id, out var enumerator);
                 if (enumerator != null)
                 {
-                    var taskUpdateEvent = new TaskArtifactUpdateEvent
+                    var taskUpdateEvent = new StreamResponse
                     {
-                        TaskId = task.Id,
-                        Artifact = artifact
+                        ArtifactUpdate = new TaskArtifactUpdateEvent
+                        {
+                            TaskId = task.Id,
+                            Artifact = artifact
+                        }
                     };
                     activity?.SetTag("event.type", "artifact");
                     enumerator.NotifyEvent(taskUpdateEvent);
@@ -458,5 +471,18 @@ public sealed class TaskManager : ITaskManager
             throw;
         }
     }
-    // TODO: Implement UpdateArtifact method
+
+    /// <inheritdoc />
+    public Task<ListTasksResponse> ListTasksAsync(ListTasksRequest request, CancellationToken cancellationToken = default)
+    {
+        // Default implementation - not yet fully supported
+        throw new A2AException("ListTasks is not yet implemented.", A2AErrorCode.UnsupportedOperation);
+    }
+
+    /// <inheritdoc />
+    public Task<AgentCard> GetExtendedAgentCardAsync(string agentUrl, CancellationToken cancellationToken = default)
+    {
+        // Delegates to the same handler as the public agent card by default
+        return OnAgentCardQuery(agentUrl, cancellationToken);
+    }
 }

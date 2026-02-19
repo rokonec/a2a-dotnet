@@ -1,22 +1,29 @@
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace A2A;
 
 /// <summary>
-/// Event sent by server during sendStream or subscribe requests.
+/// An event sent by the agent to notify the client of a change in a task's status.
 /// </summary>
-public sealed class TaskStatusUpdateEvent() : TaskUpdateEvent(A2AEventKind.StatusUpdate)
+public sealed class TaskStatusUpdateEvent
 {
-    /// <summary>
-    /// Gets or sets the current status of the task.
-    /// </summary>
+    /// <summary>The id of the task that is changed.</summary>
+    [JsonPropertyName("taskId")]
+    [JsonRequired]
+    public string TaskId { get; set; } = string.Empty;
+
+    /// <summary>The id of the context that the task belongs to.</summary>
+    [JsonPropertyName("contextId")]
+    [JsonRequired]
+    public string ContextId { get; set; } = string.Empty;
+
+    /// <summary>The new status of the task.</summary>
     [JsonPropertyName("status")]
     [JsonRequired]
     public AgentTaskStatus Status { get; set; } = new();
 
-    /// <summary>
-    /// Gets or sets a value indicating whether this indicates the end of the event stream.
-    /// </summary>
-    [JsonPropertyName("final")]
-    public bool Final { get; set; }
+    /// <summary>Optional metadata to associate with the task update.</summary>
+    [JsonPropertyName("metadata")]
+    public Dictionary<string, JsonElement>? Metadata { get; set; }
 }

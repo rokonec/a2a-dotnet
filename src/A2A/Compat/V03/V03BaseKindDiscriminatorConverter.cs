@@ -1,9 +1,10 @@
+using A2A;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace A2A;
+namespace A2A.Compat.V03;
 
-internal abstract class BaseKindDiscriminatorConverter<TBase> : JsonConverter<TBase>
+internal abstract class V03BaseKindDiscriminatorConverter<TBase> : JsonConverter<TBase>
     where TBase : class
 {
     internal const string DiscriminatorPropertyName = "kind";

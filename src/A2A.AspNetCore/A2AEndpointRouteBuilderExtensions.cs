@@ -115,6 +115,24 @@ public static class A2ARouteBuilderExtensions
         routeGroup.MapPost("/v1/message:stream", ([FromBody] MessageSendParams sendParams, CancellationToken cancellationToken) =>
             A2AHttpProcessor.SendMessageStream(taskManager, logger, sendParams, cancellationToken));
 
+        // /v1/tasks endpoint - ListTasks
+        routeGroup.MapGet("/v1/tasks", (
+            [FromQuery] string? contextId,
+            [FromQuery] string? status,
+            [FromQuery] int? pageSize,
+            [FromQuery] string? pageToken,
+            [FromQuery] int? historyLength,
+            CancellationToken cancellationToken) =>
+            A2AHttpProcessor.ListTasksAsync(taskManager, logger, contextId, status, pageSize, pageToken, historyLength, cancellationToken));
+
+        // /v1/extendedAgentCard endpoint
+        routeGroup.MapGet("/v1/extendedAgentCard", async (HttpRequest request, CancellationToken cancellationToken) =>
+            await A2AHttpProcessor.GetExtendedAgentCardAsync(taskManager, logger, $"{request.Scheme}://{request.Host}{path}", cancellationToken).ConfigureAwait(false));
+
+        // /v1/tasks/{id}/pushNotificationConfigs/{configId} - DELETE
+        routeGroup.MapDelete("/v1/tasks/{id}/pushNotificationConfigs/{configId}", (string id, string configId, CancellationToken cancellationToken) =>
+            A2AHttpProcessor.DeletePushNotificationAsync(taskManager, logger, id, configId, cancellationToken));
+
         return routeGroup;
     }
 }

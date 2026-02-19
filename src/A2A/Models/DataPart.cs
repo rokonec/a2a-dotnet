@@ -1,17 +1,17 @@
 using System.Text.Json;
-using System.Text.Json.Serialization;
 
 namespace A2A;
 
 /// <summary>
-/// Represents a structured data segment within a message part.
+/// Compatibility helper for creating structured data parts.
+/// In v1.0, use <see cref="Part.FromData"/> or set <see cref="Part.Data"/> directly.
 /// </summary>
-public sealed class DataPart() : Part(PartKind.Data)
+public sealed class DataPart : Part
 {
     /// <summary>
-    /// Structured data content.
+    /// Initializes a new data part.
     /// </summary>
-    [JsonPropertyName("data")]
-    [JsonRequired]
-    public Dictionary<string, JsonElement> Data { get; set; } = [];
+    public DataPart()
+    {
+    }
 }

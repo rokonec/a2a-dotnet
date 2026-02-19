@@ -57,7 +57,7 @@ internal sealed class MessageBasedCommunicationSample
         AgentCard echoAgentCard = await cardResolver.GetAgentCardAsync();
 
         // 2. Create an A2A client to communicate with the agent using url from the agent card
-        A2AClient agentClient = new(new Uri(echoAgentCard.Url));
+        A2AClient agentClient = new(new Uri(echoAgentCard.SupportedInterfaces[0].Url));
 
         // 3. Create a message to send to the agent
         AgentMessage userMessage = new()
@@ -88,7 +88,8 @@ internal sealed class MessageBasedCommunicationSample
         Console.WriteLine($" Sending message via non-streaming API: {((TextPart)userMessage.Parts[0]).Text}");
 
         // Send the message and get the response
-        AgentMessage agentResponse = (AgentMessage)await agentClient.SendMessageAsync(new MessageSendParams { Message = userMessage });
+        SendMessageResponse response = await agentClient.SendMessageAsync(new MessageSendParams { Message = userMessage });
+        AgentMessage agentResponse = response.Message!;
 
         // Display the response
         Console.WriteLine($" Received complete response from agent: {((TextPart)agentResponse.Parts[0]).Text}");
@@ -106,9 +107,9 @@ internal sealed class MessageBasedCommunicationSample
         Console.WriteLine($" Sending message via streaming API: {((TextPart)userMessage.Parts[0]).Text}");
 
         // Send the message and get the response as a stream
-        await foreach (SseItem<A2AEvent> sseItem in agentClient.SendMessageStreamingAsync(new MessageSendParams { Message = userMessage }))
+        await foreach (SseItem<StreamResponse> sseItem in agentClient.SendMessageStreamingAsync(new MessageSendParams { Message = userMessage }))
         {
-            AgentMessage agentResponse = (AgentMessage)sseItem.Data;
+            AgentMessage agentResponse = sseItem.Data.Message!;
 
             // Display each part of the response as it arrives
             Console.WriteLine($" Received streaming response chunk: {((TextPart)agentResponse.Parts[0]).Text}");

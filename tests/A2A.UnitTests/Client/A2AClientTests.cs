@@ -13,7 +13,7 @@ public class A2AClientTests
         // Arrange
         HttpRequestMessage? capturedRequest = null;
 
-        var sut = CreateA2AClient(new AgentMessage() { MessageId = "id-1", Role = MessageRole.User, Parts = [] }, req => capturedRequest = req);
+        var sut = CreateA2AClient(new SendMessageResponse { Message = new AgentMessage() { MessageId = "id-1", Role = MessageRole.User, Parts = [] } }, req => capturedRequest = req);
 
         var sendParams = new MessageSendParams
         {
@@ -44,14 +44,14 @@ public class A2AClientTests
         Assert.NotNull(capturedRequest);
 
         var requestJson = JsonDocument.Parse(await capturedRequest.Content!.ReadAsStringAsync());
-        Assert.Equal("message/send", requestJson.RootElement.GetProperty("method").GetString());
+        Assert.Equal("SendMessage", requestJson.RootElement.GetProperty("method").GetString());
         Assert.True(Guid.TryParse(requestJson.RootElement.GetProperty("id").GetString(), out _));
 
         var parameters = requestJson.RootElement.GetProperty("params").Deserialize<MessageSendParams>();
         Assert.NotNull(parameters);
 
         Assert.Equal(sendParams.Message.Parts.Count, parameters.Message.Parts.Count);
-        Assert.Equal(((TextPart)sendParams.Message.Parts[0]).Text, ((TextPart)parameters.Message.Parts[0]).Text);
+        Assert.Equal(sendParams.Message.Parts[0].Text, parameters.Message.Parts[0].Text);
         Assert.Equal(sendParams.Message.Role, parameters.Message.Role);
         Assert.Equal(sendParams.Message.MessageId, parameters.Message.MessageId);
         Assert.Equal(sendParams.Message.TaskId, parameters.Message.TaskId);
@@ -78,7 +78,7 @@ public class A2AClientTests
             Parts =
             [
                 new TextPart { Text = "Test text" },
-                new DataPart { Data = new Dictionary<string, JsonElement> { { "key", JsonDocument.Parse("\"value\"").RootElement } } },
+                new DataPart { Data = JsonSerializer.SerializeToElement(new Dictionary<string, JsonElement> { { "key", JsonDocument.Parse("\"value\"").RootElement } }) },
             ],
             Metadata = new Dictionary<string, JsonElement> { { "metaKey", JsonDocument.Parse("\"metaValue\"").RootElement } },
             ReferenceTaskIds = ["ref1", "ref2"],
@@ -87,21 +87,21 @@ public class A2AClientTests
             ContextId = "ctx-789"
         };
 
-        var sut = CreateA2AClient(expectedMessage);
+        var sut = CreateA2AClient(new SendMessageResponse { Message = expectedMessage });
 
         var sendParams = new MessageSendParams();
 
         // Act
-        var result = await sut.SendMessageAsync(sendParams) as AgentMessage;
+        var result = (await sut.SendMessageAsync(sendParams))?.Message;
 
         // Assert
         Assert.NotNull(result);
         Assert.Equal(expectedMessage.Role, result.Role);
         Assert.Equal(expectedMessage.Parts.Count, result.Parts.Count);
-        Assert.IsType<TextPart>(result.Parts[0]);
-        Assert.Equal(((TextPart)expectedMessage.Parts[0]).Text, ((TextPart)result.Parts[0]).Text);
-        Assert.IsType<DataPart>(result.Parts[1]);
-        Assert.Equal(((DataPart)expectedMessage.Parts[1]).Data["key"].GetString(), ((DataPart)result.Parts[1]).Data["key"].GetString());
+        Assert.NotNull(result.Parts[0].Text);
+        Assert.Equal(expectedMessage.Parts[0].Text, result.Parts[0].Text);
+        Assert.NotNull(result.Parts[1].Data);
+        Assert.Equal(expectedMessage.Parts[1].Data!.Value.GetProperty("key").GetString(), result.Parts[1].Data!.Value.GetProperty("key").GetString());
         Assert.Equal(expectedMessage.Metadata["metaKey"].GetString(), result.Metadata!["metaKey"].GetString());
         Assert.Equal(expectedMessage.ReferenceTaskIds, result.ReferenceTaskIds);
         Assert.Equal(expectedMessage.MessageId, result.MessageId);
@@ -126,7 +126,7 @@ public class A2AClientTests
         Assert.NotNull(capturedRequest);
 
         var requestJson = JsonDocument.Parse(await capturedRequest.Content!.ReadAsStringAsync());
-        Assert.Equal("tasks/get", requestJson.RootElement.GetProperty("method").GetString());
+        Assert.Equal("GetTask", requestJson.RootElement.GetProperty("method").GetString());
         Assert.True(Guid.TryParse(requestJson.RootElement.GetProperty("id").GetString(), out _));
 
         var parameters = requestJson.RootElement.GetProperty("params").Deserialize<TaskIdParams>();
@@ -159,7 +159,7 @@ public class A2AClientTests
         Assert.Equal(expectedTask.ContextId, result.ContextId);
         Assert.Equal(expectedTask.Status.State, result.Status.State);
         Assert.Equal(expectedTask.Artifacts![0].ArtifactId, result.Artifacts![0].ArtifactId);
-        Assert.Equal(((TextPart)expectedTask.Artifacts![0].Parts[0]).Text, ((TextPart)result.Artifacts![0].Parts[0]).Text);
+        Assert.Equal(expectedTask.Artifacts![0].Parts[0].Text, result.Artifacts![0].Parts[0].Text);
         Assert.Equal(expectedTask.History![0].MessageId, result.History![0].MessageId);
         Assert.Equal(expectedTask.Metadata!["foo"].GetString(), result.Metadata!["foo"].GetString());
     }
@@ -185,7 +185,7 @@ public class A2AClientTests
         Assert.NotNull(capturedRequest);
 
         var requestJson = JsonDocument.Parse(await capturedRequest.Content!.ReadAsStringAsync());
-        Assert.Equal("tasks/cancel", requestJson.RootElement.GetProperty("method").GetString());
+        Assert.Equal("CancelTask", requestJson.RootElement.GetProperty("method").GetString());
         Assert.True(Guid.TryParse(requestJson.RootElement.GetProperty("id").GetString(), out _));
 
         var parameters = requestJson.RootElement.GetProperty("params").Deserialize<TaskIdParams>();
@@ -221,7 +221,7 @@ public class A2AClientTests
         Assert.Equal(expectedTask.ContextId, result.ContextId);
         Assert.Equal(expectedTask.Status.State, result.Status.State);
         Assert.Equal(expectedTask.Artifacts![0].ArtifactId, result.Artifacts![0].ArtifactId);
-        Assert.Equal(((TextPart)expectedTask.Artifacts![0].Parts[0]).Text, ((TextPart)result.Artifacts![0].Parts[0]).Text);
+        Assert.Equal(expectedTask.Artifacts![0].Parts[0].Text, result.Artifacts![0].Parts[0].Text);
         Assert.Equal(expectedTask.History![0].MessageId, result.History![0].MessageId);
         Assert.Equal(expectedTask.Metadata!["foo"].GetString(), result.Metadata!["foo"].GetString());
     }
@@ -244,7 +244,7 @@ public class A2AClientTests
                 Token = "tok",
                 Authentication = new PushNotificationAuthenticationInfo
                 {
-                    Schemes = ["Bearer"],
+                    Scheme = "Bearer",
                 }
             }
         };
@@ -256,7 +256,7 @@ public class A2AClientTests
         Assert.NotNull(capturedRequest);
 
         var requestJson = JsonDocument.Parse(await capturedRequest.Content!.ReadAsStringAsync());
-        Assert.Equal("tasks/pushNotificationConfig/set", requestJson.RootElement.GetProperty("method").GetString());
+        Assert.Equal("CreateTaskPushNotificationConfig", requestJson.RootElement.GetProperty("method").GetString());
         Assert.True(Guid.TryParse(requestJson.RootElement.GetProperty("id").GetString(), out _));
 
         var parameters = requestJson.RootElement.GetProperty("params").Deserialize<TaskPushNotificationConfig>();
@@ -265,7 +265,7 @@ public class A2AClientTests
         Assert.Equal(pushConfig.PushNotificationConfig.Url, parameters.PushNotificationConfig.Url);
         Assert.Equal(pushConfig.PushNotificationConfig.Id, parameters.PushNotificationConfig.Id);
         Assert.Equal(pushConfig.PushNotificationConfig.Token, parameters.PushNotificationConfig.Token);
-        Assert.Equal(pushConfig.PushNotificationConfig.Authentication!.Schemes, parameters.PushNotificationConfig.Authentication!.Schemes);
+        Assert.Equal(pushConfig.PushNotificationConfig.Authentication!.Scheme, parameters.PushNotificationConfig.Authentication!.Scheme);
     }
 
     [Fact]
@@ -282,7 +282,7 @@ public class A2AClientTests
                 Token = "tok",
                 Authentication = new PushNotificationAuthenticationInfo
                 {
-                    Schemes = ["Bearer"],
+                    Scheme = "Bearer",
                 }
             }
         };
@@ -297,7 +297,7 @@ public class A2AClientTests
         Assert.Equal(expectedConfig.TaskId, result.TaskId);
         Assert.Equal(expectedConfig.PushNotificationConfig.Url, result.PushNotificationConfig.Url);
         Assert.Equal(expectedConfig.PushNotificationConfig.Token, result.PushNotificationConfig.Token);
-        Assert.Equal(expectedConfig.PushNotificationConfig.Authentication!.Schemes, result.PushNotificationConfig.Authentication!.Schemes);
+        Assert.Equal(expectedConfig.PushNotificationConfig.Authentication!.Scheme, result.PushNotificationConfig.Authentication!.Scheme);
     }
 
     [Fact]
@@ -324,7 +324,7 @@ public class A2AClientTests
         Assert.NotNull(capturedRequest);
 
         var requestJson = JsonDocument.Parse(await capturedRequest.Content!.ReadAsStringAsync());
-        Assert.Equal("tasks/pushNotificationConfig/get", requestJson.RootElement.GetProperty("method").GetString());
+        Assert.Equal("GetTaskPushNotificationConfig", requestJson.RootElement.GetProperty("method").GetString());
         Assert.True(Guid.TryParse(requestJson.RootElement.GetProperty("id").GetString(), out _));
 
         var parameters = requestJson.RootElement.GetProperty("params").Deserialize<GetTaskPushNotificationConfigParams>();
@@ -347,7 +347,7 @@ public class A2AClientTests
                 Token = "tok2",
                 Authentication = new PushNotificationAuthenticationInfo
                 {
-                    Schemes = ["Bearer"]
+                    Scheme = "Bearer"
                 }
             }
         };
@@ -364,7 +364,7 @@ public class A2AClientTests
         Assert.Equal(expectedConfig.TaskId, result.TaskId);
         Assert.Equal(expectedConfig.PushNotificationConfig.Url, result.PushNotificationConfig.Url);
         Assert.Equal(expectedConfig.PushNotificationConfig.Token, result.PushNotificationConfig.Token);
-        Assert.Equal(expectedConfig.PushNotificationConfig.Authentication!.Schemes, result.PushNotificationConfig.Authentication!.Schemes);
+        Assert.Equal(expectedConfig.PushNotificationConfig.Authentication!.Scheme, result.PushNotificationConfig.Authentication!.Scheme);
     }
 
     [Fact]
@@ -403,7 +403,7 @@ public class A2AClientTests
         // Arrange
         HttpRequestMessage? capturedRequest = null;
 
-        var sut = CreateA2AClient(new AgentMessage() { MessageId = "id-1", Role = MessageRole.User, Parts = [] }, req => capturedRequest = req, isSse: true);
+        var sut = CreateA2AClient(new StreamResponse { Message = new AgentMessage() { MessageId = "id-1", Role = MessageRole.User, Parts = [] } }, req => capturedRequest = req, isSse: true);
 
         var sendParams = new MessageSendParams
         {
@@ -437,13 +437,13 @@ public class A2AClientTests
         Assert.NotNull(capturedRequest);
 
         var requestJson = JsonDocument.Parse(await capturedRequest.Content!.ReadAsStringAsync());
-        Assert.Equal("message/stream", requestJson.RootElement.GetProperty("method").GetString());
+        Assert.Equal("SendStreamingMessage", requestJson.RootElement.GetProperty("method").GetString());
         Assert.True(Guid.TryParse(requestJson.RootElement.GetProperty("id").GetString(), out _));
 
         var parameters = requestJson.RootElement.GetProperty("params").Deserialize<MessageSendParams>();
         Assert.NotNull(parameters);
         Assert.Equal(sendParams.Message.Parts.Count, parameters.Message.Parts.Count);
-        Assert.Equal(((TextPart)sendParams.Message.Parts[0]).Text, ((TextPart)parameters.Message.Parts[0]).Text);
+        Assert.Equal(sendParams.Message.Parts[0].Text, parameters.Message.Parts[0].Text);
         Assert.Equal(sendParams.Message.Role, parameters.Message.Role);
         Assert.Equal(sendParams.Message.MessageId, parameters.Message.MessageId);
         Assert.Equal(sendParams.Message.TaskId, parameters.Message.TaskId);
@@ -468,7 +468,7 @@ public class A2AClientTests
             Parts =
             [
                 new TextPart { Text = "Test text" },
-                new DataPart { Data = new Dictionary<string, JsonElement> { { "key", JsonDocument.Parse("\"value\"").RootElement } } },
+                new DataPart { Data = JsonSerializer.SerializeToElement(new Dictionary<string, JsonElement> { { "key", JsonDocument.Parse("\"value\"").RootElement } }) },
             ],
             Metadata = new Dictionary<string, JsonElement> { { "metaKey", JsonDocument.Parse("\"metaValue\"").RootElement } },
             ReferenceTaskIds = ["ref1", "ref2"],
@@ -477,12 +477,12 @@ public class A2AClientTests
             ContextId = "ctx-789"
         };
 
-        var sut = CreateA2AClient(expectedMessage, isSse: true);
+        var sut = CreateA2AClient(new StreamResponse { Message = expectedMessage }, isSse: true);
 
         var sendParams = new MessageSendParams();
 
         // Act
-        SseItem<A2AEvent>? result = null;
+        SseItem<StreamResponse>? result = null;
         await foreach (var item in sut.SendMessageStreamingAsync(sendParams))
         {
             result = item;
@@ -491,13 +491,14 @@ public class A2AClientTests
 
         // Assert
         Assert.NotNull(result);
-        var message = Assert.IsType<AgentMessage>(result.Value.Data);
+        var message = result.Value.Data.Message;
+        Assert.NotNull(message);
         Assert.Equal(expectedMessage.Role, message.Role);
         Assert.Equal(expectedMessage.Parts.Count, message.Parts.Count);
-        Assert.IsType<TextPart>(message.Parts[0]);
-        Assert.Equal(((TextPart)expectedMessage.Parts[0]).Text, ((TextPart)message.Parts[0]).Text);
-        Assert.IsType<DataPart>(message.Parts[1]);
-        Assert.Equal(((DataPart)expectedMessage.Parts[1]).Data["key"].GetString(), ((DataPart)message.Parts[1]).Data["key"].GetString());
+        Assert.NotNull(message.Parts[0].Text);
+        Assert.Equal(expectedMessage.Parts[0].Text, message.Parts[0].Text);
+        Assert.NotNull(message.Parts[1].Data);
+        Assert.Equal(expectedMessage.Parts[1].Data!.Value.GetProperty("key").GetString(), message.Parts[1].Data!.Value.GetProperty("key").GetString());
         Assert.Equal(expectedMessage.Metadata["metaKey"].GetString(), message.Metadata!["metaKey"].GetString());
         Assert.Equal(expectedMessage.ReferenceTaskIds, message.ReferenceTaskIds);
         Assert.Equal(expectedMessage.MessageId, message.MessageId);
@@ -511,7 +512,7 @@ public class A2AClientTests
         // Arrange
         HttpRequestMessage? capturedRequest = null;
 
-        var sut = CreateA2AClient(new AgentMessage() { MessageId = "id-1", Role = MessageRole.User, Parts = [] }, req => capturedRequest = req, isSse: true);
+        var sut = CreateA2AClient(new StreamResponse { Message = new AgentMessage() { MessageId = "id-1", Role = MessageRole.User, Parts = [] } }, req => capturedRequest = req, isSse: true);
 
         var taskId = "task-123";
 
@@ -525,7 +526,7 @@ public class A2AClientTests
         Assert.NotNull(capturedRequest);
 
         var requestJson = JsonDocument.Parse(await capturedRequest.Content!.ReadAsStringAsync());
-        Assert.Equal("tasks/resubscribe", requestJson.RootElement.GetProperty("method").GetString());
+        Assert.Equal("SubscribeToTask", requestJson.RootElement.GetProperty("method").GetString());
         Assert.True(Guid.TryParse(requestJson.RootElement.GetProperty("id").GetString(), out _));
 
         var parameters = requestJson.RootElement.GetProperty("params").Deserialize<TaskIdParams>();
@@ -543,7 +544,7 @@ public class A2AClientTests
             Parts =
             [
                 new TextPart { Text = "Test text" },
-                new DataPart { Data = new Dictionary<string, JsonElement> { { "key", JsonDocument.Parse("\"value\"").RootElement } } },
+                new DataPart { Data = JsonSerializer.SerializeToElement(new Dictionary<string, JsonElement> { { "key", JsonDocument.Parse("\"value\"").RootElement } }) },
             ],
             Metadata = new Dictionary<string, JsonElement> { { "metaKey", JsonDocument.Parse("\"metaValue\"").RootElement } },
             ReferenceTaskIds = ["ref1", "ref2"],
@@ -552,10 +553,10 @@ public class A2AClientTests
             ContextId = "ctx-789"
         };
 
-        var sut = CreateA2AClient(expectedMessage, isSse: true);
+        var sut = CreateA2AClient(new StreamResponse { Message = expectedMessage }, isSse: true);
 
         // Act
-        SseItem<A2AEvent>? result = null;
+        SseItem<StreamResponse>? result = null;
         await foreach (var item in sut.SubscribeToTaskAsync("task-123"))
         {
             result = item;
@@ -564,13 +565,14 @@ public class A2AClientTests
 
         // Assert
         Assert.NotNull(result);
-        var message = Assert.IsType<AgentMessage>(result.Value.Data);
+        var message = result.Value.Data.Message;
+        Assert.NotNull(message);
         Assert.Equal(expectedMessage.Role, message.Role);
         Assert.Equal(expectedMessage.Parts.Count, message.Parts.Count);
-        Assert.IsType<TextPart>(message.Parts[0]);
-        Assert.Equal(((TextPart)expectedMessage.Parts[0]).Text, ((TextPart)message.Parts[0]).Text);
-        Assert.IsType<DataPart>(message.Parts[1]);
-        Assert.Equal(((DataPart)expectedMessage.Parts[1]).Data["key"].GetString(), ((DataPart)message.Parts[1]).Data["key"].GetString());
+        Assert.NotNull(message.Parts[0].Text);
+        Assert.Equal(expectedMessage.Parts[0].Text, message.Parts[0].Text);
+        Assert.NotNull(message.Parts[1].Data);
+        Assert.Equal(expectedMessage.Parts[1].Data!.Value.GetProperty("key").GetString(), message.Parts[1].Data!.Value.GetProperty("key").GetString());
         Assert.Equal(expectedMessage.Metadata["metaKey"].GetString(), message.Metadata!["metaKey"].GetString());
         Assert.Equal(expectedMessage.ReferenceTaskIds, message.ReferenceTaskIds);
         Assert.Equal(expectedMessage.MessageId, message.MessageId);

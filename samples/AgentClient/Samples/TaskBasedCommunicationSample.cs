@@ -58,7 +58,7 @@ internal sealed class TaskBasedCommunicationSample
         AgentCard echoAgentCard = await cardResolver.GetAgentCardAsync();
 
         // 3. Create an A2A client to communicate with the echotasks agent using the URL from the agent card
-        A2AClient agentClient = new(new Uri(echoAgentCard.Url));
+        A2AClient agentClient = new(new Uri(echoAgentCard.SupportedInterfaces[0].Url));
 
         // 4. Demo a short-lived task
         await DemoShortLivedTaskAsync(agentClient);
@@ -81,7 +81,7 @@ internal sealed class TaskBasedCommunicationSample
         };
 
         Console.WriteLine($" Sending message to the agent: {((TextPart)userMessage.Parts[0]).Text}");
-        AgentTask agentResponse = (AgentTask)await agentClient.SendMessageAsync(new MessageSendParams { Message = userMessage });
+        AgentTask agentResponse = (await agentClient.SendMessageAsync(new MessageSendParams { Message = userMessage })).Task!;
         DisplayTaskDetails(agentResponse);
     }
 
@@ -106,7 +106,7 @@ internal sealed class TaskBasedCommunicationSample
 
         // 1. Create a new task by sending the message to the agent
         Console.WriteLine($" Sending message to the agent: {((TextPart)userMessage.Parts[0]).Text}");
-        AgentTask agentResponse = (AgentTask)await agentClient.SendMessageAsync(new MessageSendParams { Message = userMessage });
+        AgentTask agentResponse = (await agentClient.SendMessageAsync(new MessageSendParams { Message = userMessage })).Task!;
         DisplayTaskDetails(agentResponse);
 
         // 2. Retrieve the task

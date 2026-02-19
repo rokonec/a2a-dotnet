@@ -1,28 +1,38 @@
+using System.Runtime.Serialization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace A2A;
 
 /// <summary>
-/// Message sender's role.
+/// Defines the sender of a message in A2A protocol communication.
 /// </summary>
-[JsonConverter(typeof(KebabCaseLowerJsonStringEnumConverter<MessageRole>))]
+[JsonConverter(typeof(ProtoJsonEnumConverter<MessageRole>))]
 public enum MessageRole
 {
     /// <summary>
-    /// User role.
+    /// Unspecified role.
     /// </summary>
-    User,
+    [EnumMember(Value = "ROLE_UNSPECIFIED")]
+    Unspecified,
+
     /// <summary>
-    /// Agent role.
+    /// USER role refers to communication from the client to the server.
     /// </summary>
+    [EnumMember(Value = "ROLE_USER")]
+    User,
+
+    /// <summary>
+    /// AGENT role refers to communication from the server to the client.
+    /// </summary>
+    [EnumMember(Value = "ROLE_AGENT")]
     Agent
 }
 
 /// <summary>
 /// Represents a single message exchanged between user and agent.
 /// </summary>
-public sealed class AgentMessage() : A2AResponse(A2AEventKind.Message)
+public sealed class AgentMessage
 {
     /// <summary>
     /// Message sender's role.

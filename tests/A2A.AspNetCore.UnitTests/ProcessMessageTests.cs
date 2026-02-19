@@ -38,7 +38,7 @@
 //         var getRequest = new JsonRpcRequest
 //         {
 //             Id = Guid.NewGuid().ToString(),
-//             Method = A2AMethods.TaskGet,
+//             Method = A2AMethods.GetTask,
 //             Params = new TaskIdParams { Id = taskId }
 //         };
 //         var getResponse = await taskManager.ProcessMessageAsync(getRequest, CancellationToken.None);
@@ -73,7 +73,7 @@
 //         var cancelRequest = new JsonRpcRequest
 //         {
 //             Id = Guid.NewGuid().ToString(),
-//             Method = A2AMethods.TaskCancel,
+//             Method = A2AMethods.CancelTask,
 //             Params = new TaskIdParams { Id = taskId }
 //         };
 //         var cancelResponse = await taskManager.ProcessMessageAsync(cancelRequest, CancellationToken.None);
@@ -99,7 +99,7 @@
 //         var setRequest = new JsonRpcRequest
 //         {
 //             Id = Guid.NewGuid().ToString(),
-//             Method = A2AMethods.TaskPushNotificationConfigSet,
+//             Method = A2AMethods.CreateTaskPushNotificationConfig,
 //             Params = pushNotificationConfig
 //         };
 //         var setResponse = await taskManager.ProcessMessageAsync(setRequest, CancellationToken.None);

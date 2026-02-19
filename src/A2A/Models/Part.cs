@@ -4,65 +4,111 @@ using System.Text.Json.Serialization;
 namespace A2A;
 
 /// <summary>
-/// Represents a part of a message, which can be text, a file, or structured data.
+/// Identifies which content field is set in a <see cref="Part"/>.
 /// </summary>
-/// <param name="kind">The <c>kind</c> discriminator value</param>
-[JsonConverter(typeof(PartConverterViaKindDiscriminator<Part>))]
-[JsonDerivedType(typeof(TextPart))]
-[JsonDerivedType(typeof(FilePart))]
-[JsonDerivedType(typeof(DataPart))]
-// You might be wondering why we don't use JsonPolymorphic here. The reason is that it automatically throws a NotSupportedException if the 
-// discriminator isn't present or accounted for. In the case of A2A, we want to throw a more specific A2AException with an error code, so
-// we implement our own converter to handle that, with the discriminator logic implemented by-hand.
-public abstract class Part(string kind)
+public enum PartContentCase
+{
+    /// <summary>No content field is set.</summary>
+    None,
+    /// <summary>The <see cref="Part.Text"/> field is set.</summary>
+    Text,
+    /// <summary>The <see cref="Part.Raw"/> field is set.</summary>
+    Raw,
+    /// <summary>The <see cref="Part.Url"/> field is set.</summary>
+    Url,
+    /// <summary>The <see cref="Part.Data"/> field is set.</summary>
+    Data
+}
+
+/// <summary>
+/// Represents a container for a section of communication content.
+/// Parts can be purely textual, a file (raw bytes or URL), or structured data.
+/// Exactly one of <see cref="Text"/>, <see cref="Raw"/>, <see cref="Url"/>, or <see cref="Data"/> must be set.
+/// </summary>
+public class Part
 {
     /// <summary>
-    /// The 'kind' discriminator value
+    /// The string content of a text part.
     /// </summary>
-    [JsonRequired, JsonPropertyName(BaseKindDiscriminatorConverter<Part>.DiscriminatorPropertyName), JsonInclude, JsonPropertyOrder(int.MinValue)]
-    public string Kind { get; internal set; } = kind;
+    [JsonPropertyName("text")]
+    public string? Text { get; set; }
+
     /// <summary>
-    /// Optional metadata associated with the part.
+    /// The raw byte content of a file. In JSON serialization, this is encoded as a base64 string.
+    /// </summary>
+    [JsonPropertyName("raw")]
+    public string? Raw { get; set; }
+
+    /// <summary>
+    /// A URL pointing to the file's content.
+    /// </summary>
+    [JsonPropertyName("url")]
+    public string? Url { get; set; }
+
+    /// <summary>
+    /// Arbitrary structured data as a JSON value (object, array, string, number, boolean, or null).
+    /// </summary>
+    [JsonPropertyName("data")]
+    public JsonElement? Data { get; set; }
+
+    /// <summary>
+    /// Optional metadata associated with this part.
     /// </summary>
     [JsonPropertyName("metadata")]
     public Dictionary<string, JsonElement>? Metadata { get; set; }
 
     /// <summary>
-    /// Casts this part to a TextPart.
+    /// An optional name for the file (e.g., "document.pdf").
     /// </summary>
-    /// <returns>The part as a TextPart.</returns>
-    /// <exception cref="InvalidCastException">Thrown when the part is not a TextPart.</exception>
-    public TextPart AsTextPart() => this is TextPart textPart ?
-        textPart :
-        throw new InvalidCastException($"Cannot cast {GetType().Name} to TextPart.");
+    [JsonPropertyName("filename")]
+    public string? Filename { get; set; }
 
     /// <summary>
-    /// Casts this part to a FilePart.
+    /// The media type (MIME type) of the part content (e.g., "text/plain", "application/json", "image/png").
     /// </summary>
-    /// <returns>The part as a FilePart.</returns>
-    /// <exception cref="InvalidCastException">Thrown when the part is not a FilePart.</exception>
-    public FilePart AsFilePart() => this is FilePart filePart ?
-        filePart :
-        throw new InvalidCastException($"Cannot cast {GetType().Name} to FilePart.");
+    [JsonPropertyName("mediaType")]
+    public string? MediaType { get; set; }
 
     /// <summary>
-    /// Casts this part to a DataPart.
+    /// Identifies which content field is set.
     /// </summary>
-    /// <returns>The part as a DataPart.</returns>
-    /// <exception cref="InvalidCastException">Thrown when the part is not a DataPart.</exception>
-    public DataPart AsDataPart() => this is DataPart dataPart ?
-        dataPart :
-        throw new InvalidCastException($"Cannot cast {GetType().Name} to DataPart.");
-}
+    [JsonIgnore]
+    public PartContentCase ContentCase =>
+        Text is not null ? PartContentCase.Text :
+        Raw is not null ? PartContentCase.Raw :
+        Url is not null ? PartContentCase.Url :
+        Data is not null ? PartContentCase.Data :
+        PartContentCase.None;
 
-internal class PartConverterViaKindDiscriminator<T> : BaseKindDiscriminatorConverter<T> where T : Part
-{
-    protected override IReadOnlyDictionary<string, Type> KindToTypeMapping { get; } = new Dictionary<string, Type>
-    {
-        [PartKind.Text] = typeof(TextPart),
-        [PartKind.File] = typeof(FilePart),
-        [PartKind.Data] = typeof(DataPart)
-    };
+    /// <summary>
+    /// Creates a text part.
+    /// </summary>
+    /// <param name="text">The text content.</param>
+    public static Part FromText(string text) => new() { Text = text };
 
-    protected override string DisplayName { get; } = "part";
+    /// <summary>
+    /// Creates a file part from raw bytes (base64 encoded).
+    /// </summary>
+    /// <param name="base64Bytes">The base64-encoded file content.</param>
+    /// <param name="mediaType">The MIME type of the content.</param>
+    /// <param name="filename">An optional filename.</param>
+    public static Part FromRaw(string base64Bytes, string? mediaType = null, string? filename = null) =>
+        new() { Raw = base64Bytes, MediaType = mediaType, Filename = filename };
+
+    /// <summary>
+    /// Creates a file part from a URL.
+    /// </summary>
+    /// <param name="url">The URL pointing to the file content.</param>
+    /// <param name="mediaType">The MIME type of the content.</param>
+    /// <param name="filename">An optional filename.</param>
+    public static Part FromUrl(string url, string? mediaType = null, string? filename = null) =>
+        new() { Url = url, MediaType = mediaType, Filename = filename };
+
+    /// <summary>
+    /// Creates a structured data part.
+    /// </summary>
+    /// <param name="data">The structured data as a JSON element.</param>
+    /// <param name="mediaType">The MIME type of the content.</param>
+    public static Part FromData(JsonElement data, string? mediaType = null) =>
+        new() { Data = data, MediaType = mediaType };
 }

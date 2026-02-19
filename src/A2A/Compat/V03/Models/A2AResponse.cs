@@ -1,6 +1,7 @@
+using A2A;
 using System.Text.Json.Serialization;
 
-namespace A2A;
+namespace A2A.Compat.V03;
 
 /// <summary>
 /// Base class for A2A events.
@@ -19,7 +20,7 @@ public abstract class A2AEvent(string kind)
     /// <summary>
     /// The 'kind' discriminator value
     /// </summary>
-    [JsonRequired, JsonPropertyName(BaseKindDiscriminatorConverter<A2AEvent>.DiscriminatorPropertyName), JsonInclude, JsonPropertyOrder(int.MinValue)]
+    [JsonRequired, JsonPropertyName(V03BaseKindDiscriminatorConverter<A2AEvent>.DiscriminatorPropertyName), JsonInclude, JsonPropertyOrder(int.MinValue)]
     public string Kind { get; internal set; } = kind;
 }
 
@@ -35,7 +36,7 @@ public abstract class A2AEvent(string kind)
 // we implement our own converter to handle that, with the discriminator logic implemented by-hand.
 public abstract class A2AResponse(string kind) : A2AEvent(kind);
 
-internal class A2AEventConverterViaKindDiscriminator<T> : BaseKindDiscriminatorConverter<T> where T : A2AEvent
+internal class A2AEventConverterViaKindDiscriminator<T> : V03BaseKindDiscriminatorConverter<T> where T : A2AEvent
 {
     protected override IReadOnlyDictionary<string, Type> KindToTypeMapping { get; } = new Dictionary<string, Type>
     {

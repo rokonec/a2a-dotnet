@@ -106,7 +106,7 @@ public static class A2ACli
             int notificationReceiverPort = notificationReceiverUri.Port;
 
             // Create A2A client
-            var client = new A2AClient(new Uri(card.Url));
+            var client = new A2AClient(new Uri(card.SupportedInterfaces[0].Url));
 
             // Create or use provided session ID
             string sessionId = session == "0" ? Guid.NewGuid().ToString("N") : session;
@@ -202,14 +202,7 @@ public static class A2ACli
                 string fileContent = Convert.ToBase64String(fileBytes);
                 string fileName = Path.GetFileName(filePath);
 
-                message.Parts.Add(new FilePart
-                {
-                    File = new FileWithBytes
-                    {
-                        Name = fileName,
-                        Bytes = fileContent
-                    }
-                });
+                message.Parts.Add(Part.FromRaw(fileContent, filename: fileName));
             }
             catch (Exception ex)
             {
@@ -235,7 +228,7 @@ public static class A2ACli
                 Url = $"http://{notificationReceiverHost}:{notificationReceiverPort}/notify",
                 Authentication = new PushNotificationAuthenticationInfo
                 {
-                    Schemes = ["bearer"]
+                    Scheme = "bearer"
                 }
             };
         }
@@ -261,7 +254,7 @@ public static class A2ACli
         }
         else
         {
-            agentTask = await client.SendMessageAsync(payload, cancellationToken) as AgentTask;
+            agentTask = (await client.SendMessageAsync(payload, cancellationToken))?.Task;
             Console.WriteLine($"\n{JsonSerializer.Serialize(agentTask, jsonOptions)}");
             agentTask?.Artifacts?
                 .SelectMany(artifact => artifact.Parts.OfType<TextPart>())

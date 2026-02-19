@@ -1,7 +1,7 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace A2A;
+namespace A2A.Compat.V03;
 
 /// <summary>
 /// Represents the transport protocol for an AgentInterface.

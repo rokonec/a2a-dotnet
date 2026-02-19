@@ -4,14 +4,16 @@ namespace A2A.UnitTests.Models
 {
     public sealed class MessageSendParamsTests
     {
-        [Fact]
-        public void MessageSendParams_Deserialize_NonMessageKind_Throws()
+        [Theory]
+        [InlineData("task")]
+        [InlineData("foo")]
+        public void MessageSendParams_Deserialize_InvalidKind_Throws(string invalidKind)
         {
             // Arrange
-            const string json = """
+            var json = $$"""
             {
                 "message": {
-                    "kind": "task",
+                    "kind": "{{invalidKind}}",
                     "id": "t-13",
                     "contextId": "c-13",
                     "status": { "state": "submitted" }
@@ -20,32 +22,11 @@ namespace A2A.UnitTests.Models
             """;
 
             // Act / Assert
-            var ex = Assert.Throws<A2AException>(() => JsonSerializer.Deserialize<MessageSendParams>(json, A2AJsonUtilities.DefaultOptions));
-            Assert.Equal(A2AErrorCode.InvalidRequest, ex.ErrorCode);
+            var ex = Assert.Throws<JsonException>(() => JsonSerializer.Deserialize<MessageSendParams>(json, A2AJsonUtilities.DefaultOptions));
         }
 
         [Fact]
-        public void MessageSendParams_Deserialize_UnknownMessageKind_Throws()
-        {
-            // Arrange
-            const string json = """
-            {
-                "message": {
-                    "kind": "foo",
-                    "id": "t-13",
-                    "contextId": "c-13",
-                    "status": { "state": "submitted" }
-                }
-            }
-            """;
-
-            // Act / Assert
-            var ex = Assert.Throws<A2AException>(() => JsonSerializer.Deserialize<MessageSendParams>(json, A2AJsonUtilities.DefaultOptions));
-            Assert.Equal(A2AErrorCode.InvalidRequest, ex.ErrorCode);
-        }
-
-        [Fact]
-        public void MessageSendParams_Serialized_HasKindOnMessage()
+        public void MessageSendParams_Serialized_HasMessageProperty()
         {
             // Arrange
             var msp = new MessageSendParams
@@ -60,7 +41,8 @@ namespace A2A.UnitTests.Models
 
             var serialized = JsonSerializer.Serialize(msp, A2AJsonUtilities.DefaultOptions);
 
-            Assert.Contains("\"kind\":\"message\"", serialized);
+            Assert.Contains("\"message\":", serialized);
+            Assert.Contains("\"messageId\":\"m-8\"", serialized);
         }
 
         [Fact]
@@ -86,8 +68,9 @@ namespace A2A.UnitTests.Models
             Assert.Equal(msp.Message.MessageId, deserialized.Message.MessageId);
             Assert.NotNull(deserialized.Message.Parts);
             Assert.Single(deserialized.Message.Parts);
-            var part = Assert.IsType<TextPart>(deserialized?.Message.Parts[0]);
-            Assert.Equal("hello", part.Text);
+            var part = deserialized?.Message.Parts[0];
+            Assert.NotNull(part);
+            Assert.Equal("hello", part!.Text);
         }
 
         [Fact]
